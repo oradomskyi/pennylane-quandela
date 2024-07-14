@@ -35,7 +35,7 @@ This module contains an abstract base class for constructing Perceval devices fo
 
 """
 
-from pennylane import QubitDevice, DeviceError
+from pennylane import QubitDevice
 
 import perceval as pcvl
 
@@ -103,13 +103,13 @@ class PercevalDevice(QubitDevice):
         return self._backend
 
     @staticmethod
-    def backends() -> list[str]:
+    def backends() -> set[str]:
         """List of names of available Perceval backends
 
         Returns:
             perceval.backends.BACKEND_LIST: list of string names of available backends
         """
-        return pcvl.BACKEND_LIST
+        return pcvl.BACKEND_LIST.keys()
 
     # -- QubitDevice Interface implementation
     def apply(self, operations, **kwargs):
@@ -169,3 +169,8 @@ class PercevalDevice(QubitDevice):
         self._circuit = None
         self._processor = None
         self._source = None
+
+    def create_circuit(self):
+        """Compose a quantum circuit
+        """
+        raise NotImplementedError
