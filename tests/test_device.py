@@ -59,6 +59,6 @@ class TestPercevalDevice:
         dev = PercevalDevice(1, 1, None, None)
         dev.reset()
 
-        assert dev._circuit is None
-        assert dev._processor is None
-        assert dev._source is None
+        assert dev.circuit is None
+        assert dev.processor is None
+        assert dev.source is None
