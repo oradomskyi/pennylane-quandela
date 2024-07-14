@@ -37,7 +37,8 @@ This module contains an abstract base class for constructing Perceval devices fo
 
 from pennylane import QubitDevice, DeviceError
 
-from perceval import backends, providers
+from perceval import providers
+from perceval.backends import BackendFactory, BACKEND_LIST, ABackend
 
 from ._version import __version__
 
@@ -53,7 +54,7 @@ class PercevalDevice(QubitDevice):
 
         provider (Provider | None): The Perceval backend provider.
 
-        backend (str | Backend): the desired backend. If a string, a provider must be given.
+        backend (str): the desired Perceval backend name.
     """
     name = "Perceval PennyLane plugin"
     pennylane_requires = ">=0.37.0"
@@ -69,6 +70,7 @@ class PercevalDevice(QubitDevice):
         "inverse_operations": True,
     }
 
+    # Can we construct this dynamically?
     _operation_map = {
         # native PennyLane operations also native to Perceval
         "PauliX": "X",
@@ -94,13 +96,22 @@ class PercevalDevice(QubitDevice):
         raise NotImplementedError
 
     @property
-    def backend(self):
+    def backend(self) -> ABackend:
         """The Perceval backend object.
 
         Returns:
-            perceval.backends.backend: Perceval backend object.
+            perceval.backends.ABackend: Perceval backend object.
         """
         return self._backend
+
+    @staticmethod
+    def backends() -> list[str]:
+        """List of names of available Perceval backends
+
+        Returns:
+            perceval.backends.BACKEND_LIST: list of string names of available backends
+        """
+        return BACKEND_LIST
 
     # -- QubitDevice Interface implementation 
     def apply(self, operations, **kwargs):
@@ -120,17 +131,11 @@ class PercevalDevice(QubitDevice):
 
         super().__init__(wires=wires, shots=shots)
 
-        available_backends = backends.BACKEND_LIST
-        if backend.name in available_backends:
-            self._backend = backend
-        else:
-            raise ValueError(
-                    f"Backend '{backend}' does not exist. Available backends "
-                    f"are:\n {available_backends}"
-            )
-
+        # This will fall back on SLOS when no backend found
+        self._backend = BackendFactory.get_backend(backend)
+        
         # need to verify provider type
-        self.provider = provider
+        self._provider = provider
 
         self.reset()
 
