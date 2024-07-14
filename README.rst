@@ -13,6 +13,8 @@ learning, automatic differentiation, and optimization of hybrid quantum-classica
 
 .. header-end-inclusion-marker-do-not-remove
 
+.. installation-start-inclusion-marker-do-not-remove
+
 Installation
 ============
 
@@ -20,18 +22,26 @@ This plugin requires Python version 3.9 and above, as well as PennyLane and Perc
 Installation of this plugin, as well as all dependencies could be done manually:
 
 .. code-block:: bash
+
     git clone https://github.com/oradomskyi/pennylane-perceval
 
 then to install plugin:
 
 .. code-block:: bash
+
     pip install .
 
+.. installation-end-inclusion-marker-do-not-remove
+
+.. running-tests-start-inclusion-marker-do-not-remove
 Running tests
 =============
 
 Unit tests files are part of the repository in `tests/` and can be run with:
 
 .. code-block:: bash
+
     pip install -r tests/requirements.txt
     pytest
+
+.. running-tests-end-inclusion-marker-do-not-remove
