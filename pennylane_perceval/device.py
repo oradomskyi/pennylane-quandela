@@ -61,6 +61,8 @@ class PercevalDevice(QubitDevice):
     plugin_version = __version__
     author = "Quandela"
 
+    short_name = "perceval.base_device" # is this a correct name?
+
     _capabilities = {
         "model": "qubit",
         "tensor_observables": True,
@@ -100,10 +102,48 @@ class PercevalDevice(QubitDevice):
         """
         return self._backend
 
+    # -- QubitDevice Interface implementation 
     def apply(self, operations, **kwargs):
-        """Build the circuit object and apply the operations
+        """Append circuit operations, compile the circuit (if applicable),
+        and perform the quantum computation.
         """
         raise NotImplementedError
+
+    def generate_samples(self):
+        """Generate samples from the device from the
+        exact or approximate probability distribution.
+        """
+        raise NotImplementedError
+    # ----------------------------- #
+
+    def __init__(self, wires , shots: int, provider, backend, **kwargs):
+
+        super().__init__(wires=wires, shots=shots)
+
+        available_backends = backends.BACKEND_LIST
+        if backend.name in available_backends:
+            self._backend = backend
+        else:
+            raise ValueError(
+                    f"Backend '{backend}' does not exist. Available backends "
+                    f"are:\n {available_backends}"
+            )
+
+        # need to verify provider type
+        self.provider = provider
+
+        self.reset()
+
+        self.process_kwargs(kwargs)
+
+    def process_kwargs(self, kwargs):
+        """Processing the keyword arguments that were provided upon device initialization.
+
+        Args:
+            kwargs (dict): keyword arguments to be set for the device
+        """
+        pass # for testing purposes
+        # raise NotImplementedError
 
     def apply_operation(self, operation):
         """
@@ -114,26 +154,6 @@ class PercevalDevice(QubitDevice):
         """
         raise NotImplementedError
 
-    def __init__(self, wires , shots: int, provider, backend, **kwargs):
-
-        super().__init__(wires=wires, shots=shots)
-
-        available_backends = backends.BACKEND_LIST
-        if backend.name() in available_backends:
-            self._backend = backend
-        else:
-            raise ValueError(
-                    f"Backend '{backend}' does not exist. Available backends "
-                    f"are:\n {available_backends}"
-            )
-
-        # need to verify provider type
-        # self.provider = provider
-
-        self.reset()
-
-        self.process_kwargs(kwargs)
-
     def reset(self):
         """Reset the Perceval backend device
         
@@ -142,13 +162,5 @@ class PercevalDevice(QubitDevice):
         """
         # Reset only internal data, not the options that are determined on
         # device creation
-
-        raise NotImplementedError
-
-    def process_kwargs(self, kwargs):
-        """Processing the keyword arguments that were provided upon device initialization.
-
-        Args:
-            kwargs (dict): keyword arguments to be set for the device
-        """
-        raise NotImplementedError
+        pass # for testing purposes
+        # raise NotImplementedError

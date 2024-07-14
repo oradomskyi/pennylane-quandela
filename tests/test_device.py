@@ -27,9 +27,29 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-This is the top level module from which all PennyLane-Perceval device classes can be imported.
-"""
+"""Tests for the PercevalDevice class"""
 
-from ._version import __version__
-from .device import PercevalDevice
+import pytest
+
+from pennylane_perceval import PercevalDevice
+
+from perceval.backends import BACKEND_LIST, BackendFactory
+from perceval.providers import quandela, scaleway
+
+class TestPercevalDevice:
+    """Tests for the PercevalDevice base class."""
+
+    @pytest.mark.parametrize("wires", [1, 3])
+    @pytest.mark.parametrize("shots", [1, 100])
+    @pytest.mark.parametrize("provider", [quandela, scaleway])
+    @pytest.mark.parametrize("backend", [BackendFactory.get_backend(name) for name in BACKEND_LIST])
+
+    def test_default_init(self, wires , shots, provider, backend):
+        """Tests that the device is properly initialized."""
+
+        dev = PercevalDevice(wires, shots, provider=provider, backend=backend)
+
+        assert dev.num_wires == wires
+        assert dev.shots == shots
+        assert dev.provider == provider
+        assert dev.backend == backend
