@@ -27,11 +27,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import sys
-import os
 from setuptools import setup
 
-with open("pennylane_perceval/_version.py") as f:
+with open("pennylane_perceval/_version.py", encoding="utf-8") as f:
     version = f.readlines()[-1].split()[-1].strip("\"'")
 
 # Put pip installation requirements here.

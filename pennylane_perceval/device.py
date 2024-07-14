@@ -102,6 +102,12 @@ class PercevalDevice(QubitDevice):
         """
         return self._backend
 
+    @property
+    def provider(self):
+        """The Perceval provider object.
+        """
+        return self._provider
+
     @staticmethod
     def backends() -> set[str]:
         """List of names of available Perceval backends
@@ -145,7 +151,7 @@ class PercevalDevice(QubitDevice):
         Args:
             kwargs (dict): keyword arguments to be set for the device
         """
-        pass # for testing purposes
+
         # raise NotImplementedError
 
     def apply_operation(self, operation):

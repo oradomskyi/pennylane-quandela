@@ -33,7 +33,7 @@ import pytest
 
 from pennylane_perceval import PercevalDevice
 
-from perceval.backends import BACKEND_LIST, BackendFactory
+from perceval.backends import BACKEND_LIST
 from perceval.providers import quandela, scaleway
 
 class TestPercevalDevice:
@@ -51,5 +51,5 @@ class TestPercevalDevice:
 
         assert dev.num_wires == wires
         assert dev.shots == shots
-        assert dev._provider == provider
-        assert dev._backend.name == backend_name
+        assert dev.provider == provider
+        assert dev.backend.name == backend_name
