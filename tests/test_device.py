@@ -42,7 +42,7 @@ class TestPercevalDevice:
     @pytest.mark.parametrize("wires", [1, 3])
     @pytest.mark.parametrize("shots", [1, 100])
     @pytest.mark.parametrize("provider", [quandela, scaleway])
-    @pytest.mark.parametrize("backend_name", [name for name in BACKEND_LIST])
+    @pytest.mark.parametrize("backend_name", list(BACKEND_LIST))
 
     def test_default_init(self, wires , shots, provider, backend_name):
         """Tests that the device is properly initialized."""
