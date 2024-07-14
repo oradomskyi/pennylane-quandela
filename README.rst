@@ -1,4 +1,4 @@
-Pennylane-Perceval Plugin
+PennyLane-Perceval Plugin
 #########################
 
 .. header-start-inclusion-marker-do-not-remove
