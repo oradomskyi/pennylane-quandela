@@ -1,5 +1,9 @@
-Pennylane-Perceval Plugin
+PennyLane-Perceval Plugin
 #########################
+
+.. image:: https://www.codefactor.io/repository/github/oradomskyi/pennylane-perceval/badge
+   :target: https://www.codefactor.io/repository/github/oradomskyi/pennylane-perceval
+   :alt: CodeFactor
 
 .. header-start-inclusion-marker-do-not-remove
 
