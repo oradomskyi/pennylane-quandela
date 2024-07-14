@@ -37,8 +37,7 @@ This module contains an abstract base class for constructing Perceval devices fo
 
 from pennylane import QubitDevice, DeviceError
 
-from perceval import providers
-from perceval.backends import BackendFactory, BACKEND_LIST, ABackend
+import perceval as pcvl
 
 from ._version import __version__
 
@@ -54,7 +53,7 @@ class PercevalDevice(QubitDevice):
 
         provider (Provider | None): The Perceval backend provider.
 
-        backend (str): the desired Perceval backend name.
+        backend_name (str): the desired Perceval backend name.
     """
     name = "Perceval PennyLane plugin"
     pennylane_requires = ">=0.37.0"
@@ -70,7 +69,7 @@ class PercevalDevice(QubitDevice):
         "inverse_operations": True,
     }
 
-    # Can we construct this dynamically?
+    #TODO : Can we construct this dynamically?
     _operation_map = {
         # native PennyLane operations also native to Perceval
         "PauliX": "X",
@@ -92,11 +91,10 @@ class PercevalDevice(QubitDevice):
         Returns:
             set[str]: the set of PennyLane operation names the device supports
         """
-        #return set(self._operation_map.keys())
-        raise NotImplementedError
+        return set(self._operation_map.keys())
 
     @property
-    def backend(self) -> ABackend:
+    def backend(self) -> pcvl.ABackend:
         """The Perceval backend object.
 
         Returns:
@@ -111,9 +109,9 @@ class PercevalDevice(QubitDevice):
         Returns:
             perceval.backends.BACKEND_LIST: list of string names of available backends
         """
-        return BACKEND_LIST
+        return pcvl.BACKEND_LIST
 
-    # -- QubitDevice Interface implementation 
+    # -- QubitDevice Interface implementation
     def apply(self, operations, **kwargs):
         """Append circuit operations, compile the circuit (if applicable),
         and perform the quantum computation.
@@ -127,13 +125,13 @@ class PercevalDevice(QubitDevice):
         raise NotImplementedError
     # ----------------------------- #
 
-    def __init__(self, wires , shots: int, provider, backend, **kwargs):
+    def __init__(self, wires , shots: int, provider, backend_name: str, **kwargs):
 
         super().__init__(wires=wires, shots=shots)
 
         # This will fall back on SLOS when no backend found
-        self._backend = BackendFactory.get_backend(backend)
-        
+        self._backend = pcvl.BackendFactory.get_backend(backend_name)
+
         # need to verify provider type
         self._provider = provider
 
@@ -167,5 +165,7 @@ class PercevalDevice(QubitDevice):
         """
         # Reset only internal data, not the options that are determined on
         # device creation
-        pass # for testing purposes
-        # raise NotImplementedError
+
+        self._circuit = None
+        self._processor = None
+        self._source = None
