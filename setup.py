@@ -27,6 +27,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+"""Module providing installation routines."""
+
 from setuptools import setup
 
 with open("pennylane_perceval/_version.py", encoding="utf-8") as f:

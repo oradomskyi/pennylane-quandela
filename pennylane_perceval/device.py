@@ -108,6 +108,24 @@ class PercevalDevice(QubitDevice):
         """
         return self._provider
 
+    @property
+    def source(self):
+        """The Perceval photon Source object.
+        """
+        return self._source
+
+    @property
+    def processor(self):
+        """The Perceval Processor object.
+        """
+        return self._processor
+
+    @property
+    def circuit(self):
+        """The Perceval Circuit object.
+        """
+        return self._circuit
+
     @staticmethod
     def backends() -> set[str]:
         """List of names of available Perceval backends
