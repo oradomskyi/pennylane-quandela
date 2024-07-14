@@ -1,6 +1,10 @@
 PennyLane-Perceval Plugin
 #########################
 
+.. image:: https://www.codefactor.io/repository/github/oradomskyi/pennylane-perceval/badge
+   :target: https://www.codefactor.io/repository/github/oradomskyi/pennylane-perceval
+   :alt: CodeFactor
+
 .. header-start-inclusion-marker-do-not-remove
 
 The PennyLane-Perceval plugin integrates the Quandela Perceval quantum computing framework with PennyLane's
