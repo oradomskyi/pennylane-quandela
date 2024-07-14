@@ -109,7 +109,7 @@ class PercevalDevice(QubitDevice):
         Returns:
             perceval.backends.BACKEND_LIST: list of string names of available backends
         """
-        return pcvl.BACKEND_LIST.keys()
+        return set(pcvl.BACKEND_LIST.keys())
 
     # -- QubitDevice Interface implementation
     def apply(self, operations, **kwargs):
