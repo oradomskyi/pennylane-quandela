@@ -13,22 +13,25 @@ learning, automatic differentiation, and optimization of hybrid quantum-classica
 
 .. header-end-inclusion-marker-do-not-remove
 
-# Installation
+Installation
+============
 
-## GitHub
-```bash
-git clone https://github.com/oradomskyi/pennylane-perceval
-```
-then to install Perceval:
-```bash
-pip install .
-```
+This plugin requires Python version 3.9 and above, as well as PennyLane and Perceval.
+Installation of this plugin, as well as all dependencies could be done manually:
 
-# Running tests and benchmarks
+.. code-block:: bash
+    git clone https://github.com/oradomskyi/pennylane-perceval
+
+then to install plugin:
+
+.. code-block:: bash
+    pip install .
+
+Running tests
+=============
 
 Unit tests files are part of the repository in `tests/` and can be run with:
 
-```
-pip install -r tests/requirements.txt
-pytest
-```
+.. code-block:: bash
+    pip install -r tests/requirements.txt
+    pytest
