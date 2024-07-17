@@ -33,32 +33,47 @@ import pytest
 
 from pennylane_perceval import PercevalDevice
 
-from perceval.backends import BACKEND_LIST
-from perceval.providers import quandela, scaleway
+from perceval.backends import BackendFactory
+from perceval.providers import ProviderFactory
 
 class TestPercevalDevice:
     """Tests for the PercevalDevice base class."""
 
     @pytest.mark.parametrize("wires", [1, 3])
     @pytest.mark.parametrize("shots", [1, 100])
-    @pytest.mark.parametrize("provider", [quandela, scaleway])
-    @pytest.mark.parametrize("backend_name", list(BACKEND_LIST))
-    def test_default_init(self, wires , shots, provider, backend_name):
+    def test_init_no_kwargs(self, wires , shots):
         """Tests that the device is properly initialized."""
 
-        dev = PercevalDevice(wires, shots, provider, backend_name)
+        device = PercevalDevice(wires=wires, shots=shots)
 
-        assert dev.num_wires == wires
-        assert dev.shots == shots
-        assert dev.provider == provider
-        assert dev.backend.name == backend_name
+        assert device.num_wires == wires
+        assert device.shots == shots
+        assert device.backend.name in 'SLOS'
+
+        assert device.provider is None
+        assert device._platform_name is None
+        assert device._backend_name is None
+        assert device._provider_name is None
+        assert device._api_token is None
+
+    @pytest.mark.parametrize("wires", [1, 3])
+    @pytest.mark.parametrize("shots", [1, 100])
+    @pytest.mark.parametrize("backend_name", BackendFactory.list())
+    def test_init_with_backend(self, wires, shots, backend_name):
+        """Tests that the device is properly initialized."""
+
+        device = PercevalDevice(wires=wires, shots=shots, backend=backend_name)
+
+        assert device.num_wires == wires
+        assert device.shots == shots
+        assert device.backend.name in backend_name
+        assert device._backend_name in backend_name
 
     def test_reset(self):
         """Tests that device is properly reset"""
 
-        dev = PercevalDevice(1, 1, None, None)
-        dev.reset()
+        device = PercevalDevice(1, 1)
+        device.reset()
 
-        assert dev.circuit is None
-        assert dev.processor is None
-        assert dev.source is None
+        assert device._circuit is None
+        assert device._processor is None
