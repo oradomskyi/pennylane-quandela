@@ -34,7 +34,6 @@ import pytest
 from pennylane_perceval import PercevalDevice
 
 from perceval.backends import BackendFactory
-from perceval.providers import ProviderFactory
 
 class TestPercevalDevice:
     """Tests for the PercevalDevice base class."""
@@ -51,10 +50,10 @@ class TestPercevalDevice:
         assert device.backend.name in 'SLOS'
 
         assert device.provider is None
-        assert device._platform_name is None
-        assert device._backend_name is None
-        assert device._provider_name is None
-        assert device._api_token is None
+        assert device.platform_name is None
+        assert device.backend_name is None
+        assert device.provider_name is None
+        assert device.token is None
 
     @pytest.mark.parametrize("wires", [1, 3])
     @pytest.mark.parametrize("shots", [1, 100])
@@ -67,7 +66,7 @@ class TestPercevalDevice:
         assert device.num_wires == wires
         assert device.shots == shots
         assert device.backend.name in backend_name
-        assert device._backend_name in backend_name
+        assert device.backend_name in backend_name
 
     def test_reset(self):
         """Tests that device is properly reset"""
@@ -75,5 +74,5 @@ class TestPercevalDevice:
         device = PercevalDevice(1, 1)
         device.reset()
 
-        assert device._circuit is None
-        assert device._processor is None
+        assert device.circuit is None
+        assert device.processor is None
