@@ -26,8 +26,9 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
 """Tests for the PercevalDevice class"""
+
+# pylint: disable=protected-access
 
 import pytest
 
@@ -50,10 +51,10 @@ class TestPercevalDevice:
         assert device.backend.name in 'SLOS'
 
         assert device.provider is None
-        assert device.platform_name is None
-        assert device.backend_name is None
-        assert device.provider_name is None
-        assert device.token is None
+        assert device._platform_name is None
+        assert device._backend_name is None
+        assert device._provider_name is None
+        assert device._api_token is None
 
     @pytest.mark.parametrize("wires", [1, 3])
     @pytest.mark.parametrize("shots", [1, 100])
@@ -65,8 +66,8 @@ class TestPercevalDevice:
 
         assert device.num_wires == wires
         assert device.shots == shots
-        assert device.backend.name in backend_name
-        assert device.backend_name in backend_name
+        assert device._backend.name in backend_name
+        assert device._backend_name in backend_name
 
     def test_reset(self):
         """Tests that device is properly reset"""
