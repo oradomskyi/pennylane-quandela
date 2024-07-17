@@ -34,7 +34,7 @@ Perceval device class
 This module contains a base class for constructing Perceval devices for PennyLane.
 
 """
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes,broad-exception-raised
 
 from typing import Union, Iterable, Optional
 
@@ -125,11 +125,9 @@ class PercevalDevice(QubitDevice):
     _backend = None
     _provider = None
     _api_token = None
-
-    # public
-    backend_name = None
-    provider_name = None
-    platform_name = None
+    _backend_name = None
+    _provider_name = None
+    _platform_name = None
 
     @property
     def operations(self) -> set[str]:
@@ -157,11 +155,6 @@ class PercevalDevice(QubitDevice):
             perceval.providers.ISession
         """
         return self._provider
-
-    @property
-    def token(self) -> Optional[str]:
-        """Return the Cloud API token"""
-        return self._api_token
 
     # -- Interface of pennylane.QubitDevice and its parent
     def apply(self, operations):
@@ -195,18 +188,18 @@ class PercevalDevice(QubitDevice):
         self._read_kwargs(**kwargs)
 
         # This will fall back on SLOS when no backend found
-        self._backend = pcvl.BackendFactory.get_backend(self.backend_name)
+        self._backend = pcvl.BackendFactory.get_backend(self._backend_name)
 
-        if (self.provider_name is not None and
-            self.platform_name is not None and
-            self.token         is not None ):
+        if (self._provider_name is not None and
+            self._platform_name is not None and
+            self._api_token          is not None ):
             try:
-                self._provider = pcvl.ProviderFactory.get_provider(self.provider_name,
-                    platform_name=self.platform_name,
-                    token=self.token)
+                self._provider = pcvl.ProviderFactory.get_provider(self._provider_name,
+                    platform_name=self._platform_name,
+                    token=self._api_token)
             except Exception as e:
                 raise Exception(
-                    f"Cannot connect to provider {self.provider_name} platform {self.platform_name} with token {self.token}"
+                    f"Cannot connect to provider {self._provider_name} platform {self._platform_name} with token {self._api_token}"
                 ) from e
 
         # Set default inner state
@@ -248,10 +241,10 @@ class PercevalDevice(QubitDevice):
                 if token is not provided, computation will run locally.
         """
         if 'backend' in kwargs:
-            self.backend_name = kwargs['backend']
+            self._backend_name = kwargs['backend']
         if 'provider' in kwargs:
-            self.provider_name = kwargs['provider']
+            self._provider_name = kwargs['provider']
         if 'platform' in kwargs:
-            self.platform_name = kwargs['platform']
+            self._platform_name = kwargs['platform']
         if 'api_token' in kwargs:
             self._api_token = kwargs['api_token']
