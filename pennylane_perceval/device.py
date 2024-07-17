@@ -36,7 +36,7 @@ This module contains a base class for constructing Perceval devices for PennyLan
 """
 # pylint: disable=too-many-instance-attributes,broad-exception-raised
 
-from typing import Union, Iterable, Optional
+from typing import Union, Iterable
 
 from pennylane import QubitDevice
 
