@@ -34,6 +34,7 @@ Perceval device class
 This module contains a base class for constructing Perceval devices for PennyLane.
 
 """
+# pylint: disable=too-many-instance-attributes
 
 from typing import Union, Iterable, Optional
 
@@ -204,10 +205,9 @@ class PercevalDevice(QubitDevice):
                     platform_name=self.platform_name,
                     token=self.token)
             except Exception as e:
-                raise Exception("Cannot connect to provider {} platform {} with token {}".format(
-                        self.provider_name,
-                        self.platform_name,
-                        self.token)) from e
+                raise Exception(
+                    f"Cannot connect to provider {self.provider_name} platform {self.platform_name} with token {self.token}"
+                ) from e
 
         # Set default inner state
         self.reset()
