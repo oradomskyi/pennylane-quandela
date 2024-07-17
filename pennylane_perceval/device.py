@@ -35,7 +35,7 @@ This module contains a base class for constructing Perceval devices for PennyLan
 
 """
 
-from typing import Union, Iterable, Number
+from typing import Union, Iterable, Optional
 
 from pennylane import QubitDevice
 
@@ -116,16 +116,19 @@ class PercevalDevice(QubitDevice):
         # additional operations not native to PennyLane but present in Perceval
     }
 
-    _processor = None
-    _circuit = None
+    # public
+    processor = None
+    circuit = None
 
+    # protected
     _backend = None
     _provider = None
     _api_token = None
 
-    _backend_name = None
-    _provider_name = None
-    _platform_name = None
+    # public
+    backend_name = None
+    provider_name = None
+    platform_name = None
 
     @property
     def operations(self) -> set[str]:
@@ -154,8 +157,13 @@ class PercevalDevice(QubitDevice):
         """
         return self._provider
 
+    @property
+    def token(self) -> Optional[str]:
+        """Return the Cloud API token"""
+        return self._api_token
+
     # -- Interface of pennylane.QubitDevice and its parent
-    def apply(self, operations, **kwargs):
+    def apply(self, operations):
         """Create circuit from operations, compile the circuit (if applicable),
         and perform the quantum computation.
         """
@@ -177,44 +185,44 @@ class PercevalDevice(QubitDevice):
         # Reset only internal data, not the options that are determined on
         # device creation
 
-        self._circuit = None
-        self._processor = None
+        self.circuit = None
+        self.processor = None
     # ----------------------------- #
 
-    def __init__(self, wires: Union[int, Iterable[Number, str]], shots: int, **kwargs):
+    def __init__(self, wires: Union[int, Iterable[Union[int, str]]], shots: int, **kwargs):
         super().__init__(wires=wires, shots=shots)
         self._read_kwargs(**kwargs)
 
         # This will fall back on SLOS when no backend found
-        self._backend = pcvl.BackendFactory.get_backend(self._backend_name)
+        self._backend = pcvl.BackendFactory.get_backend(self.backend_name)
 
-        if (self._provider_name is not None and
-            self._platform_name is not None and
-            self._api_token     is not None ):
+        if (self.provider_name is not None and
+            self.platform_name is not None and
+            self.token         is not None ):
             try:
-                self._provider = pcvl.ProviderFactory.get_provider(self._provider_name,
-                    platform_name=self._platform_name,
-                    token=self._api_token)
+                self._provider = pcvl.ProviderFactory.get_provider(self.provider_name,
+                    platform_name=self.platform_name,
+                    token=self.token)
             except Exception as e:
                 raise Exception("Cannot connect to provider {} platform {} with token {}".format(
-                        self._provider_name,
-                        self._platform_name,
-                        self._api_token)) from e
+                        self.provider_name,
+                        self.platform_name,
+                        self.token)) from e
 
         # Set default inner state
         self.reset()
 
-    def _create_circuit(self, operations) -> None:
+    def create_circuit(self, operations) -> None:
         """Compose a quantum circuit
         """
         raise NotImplementedError
 
-    def _create_processor(self) -> None:
+    def create_processor(self) -> None:
         """Create Perceval Processor
         """
         raise NotImplementedError
 
-    def _samples_as_pennylane(self):
+    def samples_as_pennylane(self):
         """View of samples in PennyLane-compatible format
         """
         raise NotImplementedError
@@ -240,10 +248,10 @@ class PercevalDevice(QubitDevice):
                 if token is not provided, computation will run locally.
         """
         if 'backend' in kwargs:
-            self._backend_name = kwargs['backend']
+            self.backend_name = kwargs['backend']
         if 'provider' in kwargs:
-            self._provider_name = kwargs['provider']
+            self.provider_name = kwargs['provider']
         if 'platform' in kwargs:
-            self._platform_name = kwargs['platform']
+            self.platform_name = kwargs['platform']
         if 'api_token' in kwargs:
             self._api_token = kwargs['api_token']
