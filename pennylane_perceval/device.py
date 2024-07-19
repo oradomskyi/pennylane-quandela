@@ -218,6 +218,7 @@ class PercevalDevice(QubitDevice):
         Returns:
             None
         """
+        self._process_apply_kwargs(kwargs)
         self.processor = self._pennylane_converter.convert(operations)
 
     def generate_samples(self):
@@ -241,3 +242,11 @@ class PercevalDevice(QubitDevice):
         """View of samples in PennyLane-compatible format
         """
         raise NotImplementedError
+
+    def _process_apply_kwargs(self, kwargs) -> None:
+        """Processing the keyword arguments that were provided by PennyLane
+        when calling an apply() function.
+
+        Args:
+            kwargs (dict): keyword arguments to be set for the device
+        """

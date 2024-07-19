@@ -35,7 +35,7 @@ import pytest
 from pennylane_perceval import PercevalDevice
 
 from perceval.backends import BackendFactory
-from perceval import Processor, ABackend
+from perceval import ABackend
 
 class TestPercevalDevice:
     """Tests for the PercevalDevice base class."""

@@ -90,7 +90,6 @@ class PennylaneConverter(AGateConverter):
         self._configure_processor(gate_circuit=gate_circuit, qname='q')
 
         for instruction in gate_circuit:
-            print("instruction.name", instruction.name)
             # barrier has no effect
             if instruction.name in NAME_PENNYLANE_BARRIER:
                 continue
@@ -112,17 +111,17 @@ class PennylaneConverter(AGateConverter):
                 if num_gate_qbits > 2:
                     # only 2 qubit gates
                     raise ValueError("Gates with number of Qubits higher than 2 not implemented")
-                else:
-                    c_idx = instruction.wires[0] * 2
-                    c_data = instruction.wires[1] * 2
-                    c_first = min(c_idx, c_data)
-                    print(c_idx, c_data, c_first, n_cnot)
-                    self._create_2_qubit_gates_from_catalog(instruction.name,
-                        n_cnot,
-                        c_idx,
-                        c_data,
-                        c_first,
-                        use_postselection)
+
+                c_idx = instruction.wires[0] * 2
+                c_data = instruction.wires[1] * 2
+                c_first = min(c_idx, c_data)
+
+                self._create_2_qubit_gates_from_catalog(instruction.name,
+                    n_cnot,
+                    c_idx,
+                    c_data,
+                    c_first,
+                    use_postselection)
 
         self.apply_input_state()
         return self._converted_processor
