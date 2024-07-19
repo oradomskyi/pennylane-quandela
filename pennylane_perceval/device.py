@@ -39,39 +39,53 @@ This module contains a base class for constructing Perceval devices for PennyLan
 from typing import Union, Iterable
 
 from pennylane import QubitDevice
+from pennylane.operation import Operation
 
-import perceval as pcvl
+from perceval import (
+    ISession,
+    ABackend,
+    BackendFactory,
+    ProviderFactory,
+    Processor
+)
 
 from ._version import __version__
+from .pennylane_converter import PennylaneConverter
+
 
 class PercevalDevice(QubitDevice):
     r"""Perceval device for PennyLane.
 
     Args:
-        wires (int or Iterable[Number, str]]): Number of subsystems represented by the device,
+        :param wires: (int or Iterable[Number,str]]) Number of subsystems represented by the device,
             or iterable that contains unique labels for the subsystems as numbers (i.e., ``[-1, 0, 2]``)
             or strings (``['ancilla', 'q1', 'q2']``).
 
-        shots (int): number of circuit evaluations/random samples used
+        :param shots: (int) number of circuit evaluations/random samples used
             to estimate expectation values of observables
 
     Keyword Args:
-        backend (str | None): the desired Perceval backend name.
+        :param backend: (str | None) desired Perceval backend name.
             If not provided, will fallback on 'SLOS'
-            For more see Computing Backends section:
+            For more see `Computing Backends` section:
                 https://perceval.quandela.net/docs/
 
-        provider (str | None): the Perceval provider name.
+        :param provider: (str | None) Perceval provider name.
             If not provided, computation will run locally.
-            For more see Providers section:
+            For more see `Providers` section:
                 https://perceval.quandela.net/docs/
 
-        platform (str | None): the name of cloud computing platform.
-            For more info see compatible cloud platforms in the Providers section:
+        :param platform: (str | None) name of cloud computing platform.
+            For more info see compatible cloud platforms in the `Providers` section:
                 https://perceval.quandela.net/docs/
 
-        api_token (str | None): the API token obtained from Quandela Cloud Provider 
+        :param api_token: (str | None) API token obtained from Quandela Cloud Provider 
             if token is not provided, computation will run locally.
+        
+        :param source: (Source | None) single photon source, defined by specifying parameters
+            such as `brightness`, `purity` or `indistinguishability`.
+            For more infor see `Sources` sction:
+            https://perceval.quandela.net/docs/
 
     Raises:
         Exception: when either is invalid :attr:`provider`, :attr:`platform` or :attr:`api_token`
@@ -117,17 +131,11 @@ class PercevalDevice(QubitDevice):
         # additional operations not native to PennyLane but present in Perceval
     }
 
-    # public
-    processor = None
-    circuit = None
-
     # protected
+    _pennylane_converter = None
     _backend = None
     _provider = None
-    _api_token = None
-    _backend_name = None
-    _provider_name = None
-    _platform_name = None
+    _processor = None
 
     @property
     def operations(self) -> set[str]:
@@ -139,8 +147,8 @@ class PercevalDevice(QubitDevice):
         return set(self._operation_map.keys())
 
     @property
-    def backend(self) -> pcvl.ABackend:
-        """The Perceval backend object.
+    def backend(self) -> ABackend:
+        """Perceval backend object.
 
         Returns:
             perceval.backends.ABackend: Perceval backend object.
@@ -148,27 +156,75 @@ class PercevalDevice(QubitDevice):
         return self._backend
 
     @property
-    def provider(self) -> pcvl.ISession:
-        """The Perceval provider object.
+    def provider(self) -> ISession:
+        """Perceval provider object.
 
         Returns:
             perceval.providers.ISession
         """
         return self._provider
 
+    @property
+    def processor(self) -> Processor:
+        """Perceval Processor object
+        
+        Returns:
+            perceval.components.processor.Processor
+        """
+        return self._processor
+
+    def __init__(self, wires: Union[int, Iterable[Union[int, str]]], shots: int, **kwargs):
+        QubitDevice.__init__(self, wires=wires, shots=shots)
+
+        # This will fall back on SLOS when no backend found
+        self._backend = BackendFactory.get_backend(kwargs.get('backend', None))
+
+        provider = kwargs.get('provider', None)
+        platform = kwargs.get('platform', None)
+        api_token = kwargs.get('api_token', None)
+        if (provider is not None and
+            platform is not None and
+            api_token is not None):
+            try:
+                self._provider = ProviderFactory.get_provider(provider_name=provider,
+                    platform_name=platform,
+                    token=api_token)
+            except Exception as e:
+                raise Exception(
+                    f"Cannot connect to provider {provider}" +
+                    f"platform {platform}" +
+                    f"with token {api_token}") from e
+
+        self._pennylane_converter = PennylaneConverter(
+                    catalog = kwargs.get('catalog', None),
+                    backend_name = kwargs.get('backend', None),
+                    source = kwargs.get('source', None))
+
+        # Set default inner state
+        self.reset()
+
     # -- Interface of pennylane.QubitDevice and its parent
-    def apply(self, operations):
+    def apply(self, operations: list[Operation], **kwargs):
         """Create circuit from operations, compile the circuit (if applicable),
         and perform the quantum computation.
+
+        Args:
+            :param operations: list[pennylane.operations.Operation]
+                list of PennyLane objects representing a quantum circuit.
+        
+        Keyword Args:
+            Not implemented
+        
+        Returns:
+            None
         """
-        self._create_circuit(operations)
-        self._create_processor()
+        self.processor = self._pennylane_converter.convert(operations)
 
     def generate_samples(self):
         """Generate samples from the device from the
         exact or approximate probability distribution.
         """
-        return self._samples_as_pennylane()
+        return self.samples_as_pennylane()
 
     def reset(self) -> None:
         """Reset the Perceval backend device
@@ -178,73 +234,10 @@ class PercevalDevice(QubitDevice):
         """
         # Reset only internal data, not the options that are determined on
         # device creation
-
-        self.circuit = None
         self.processor = None
     # ----------------------------- #
-
-    def __init__(self, wires: Union[int, Iterable[Union[int, str]]], shots: int, **kwargs):
-        super().__init__(wires=wires, shots=shots)
-        self._read_kwargs(**kwargs)
-
-        # This will fall back on SLOS when no backend found
-        self._backend = pcvl.BackendFactory.get_backend(self._backend_name)
-
-        if (self._provider_name is not None and
-            self._platform_name is not None and
-            self._api_token          is not None ):
-            try:
-                self._provider = pcvl.ProviderFactory.get_provider(self._provider_name,
-                    platform_name=self._platform_name,
-                    token=self._api_token)
-            except Exception as e:
-                raise Exception(
-                    f"Cannot connect to provider {self._provider_name} platform {self._platform_name} with token {self._api_token}"
-                ) from e
-
-        # Set default inner state
-        self.reset()
-
-    def create_circuit(self, operations) -> None:
-        """Compose a quantum circuit
-        """
-        raise NotImplementedError
-
-    def create_processor(self) -> None:
-        """Create Perceval Processor
-        """
-        raise NotImplementedError
 
     def samples_as_pennylane(self):
         """View of samples in PennyLane-compatible format
         """
         raise NotImplementedError
-
-    def _read_kwargs(self, **kwargs) -> None:
-        """
-        Keyword Args:
-            backend (str | None): the desired Perceval backend name.
-                If not provided, will fallback on 'SLOS'
-                For more see Computing Backends section:
-                    https://perceval.quandela.net/docs/
-
-            provider (str | None): the Perceval provider name.
-                If not provided, computation will run locally.
-                For more see Providers section:
-                    https://perceval.quandela.net/docs/
-
-            platform (str | None): the name of cloud computing platform.
-                For more info see compatible cloud platforms in the Providers section:
-                    https://perceval.quandela.net/docs/
-
-            api_token (str | None): the API token obtained from Quandela Cloud Provider 
-                if token is not provided, computation will run locally.
-        """
-        if 'backend' in kwargs:
-            self._backend_name = kwargs['backend']
-        if 'provider' in kwargs:
-            self._provider_name = kwargs['provider']
-        if 'platform' in kwargs:
-            self._platform_name = kwargs['platform']
-        if 'api_token' in kwargs:
-            self._api_token = kwargs['api_token']
