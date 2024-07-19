@@ -37,6 +37,8 @@ This module contains a base class for constructing Perceval devices for PennyLan
 # pylint: disable=too-many-instance-attributes,broad-exception-raised
 
 from typing import Union, Iterable
+from time import sleep
+from warnings import warn
 
 from pennylane import QubitDevice
 from pennylane.operation import Operation
@@ -46,8 +48,14 @@ from perceval import (
     ABackend,
     BackendFactory,
     ProviderFactory,
-    Processor
+    Processor,
+    Circuit,
+    NoiseModel,
+    LocalJob,
+    RemoteJob
 )
+
+from perceval.algorithm import Sampler
 
 from ._version import __version__
 from .pennylane_converter import PennylaneConverter
@@ -136,6 +144,18 @@ class PercevalDevice(QubitDevice):
     _backend = None
     _provider = None
     _processor = None
+    _circuit = None
+    _input_state = None
+    _min_detected_photons = None
+    _noise_model = None
+    _job_name = None
+    _job = None
+
+    DEFAULT_MIN_DETECTED_PHOTONS = 1
+    DEFAULT_NOISE_MODEL_INDISTINGUISHABILITY = .95
+    DEFAULT_NOISE_MODEL_TRANSMITTANCE = .1
+    DEFAULT_NOISE_MODEL_G2 = .01
+    DEFAULT_JOB_NAME = "My job"
 
     @property
     def operations(self) -> set[str]:
@@ -173,6 +193,57 @@ class PercevalDevice(QubitDevice):
         """
         return self._processor
 
+    @property
+    def circuit(self) -> Circuit:
+        """Perceval Circuit object."""
+        return self._circuit
+
+    @property
+    def input_state(self):
+        """Input State object."""
+        return self._input_state
+
+    @input_state.setter
+    def input_state(self, new_state):
+        """Set the input state for the photonic circuit"""
+        self._input_state = new_state
+
+    @property
+    def min_detected_photons(self):
+        """Min detected photons of the Sampler"""
+        return self._min_detected_photons
+
+    @min_detected_photons.setter
+    def min_detected_photons(self, new_min_detected_photons):
+        """Set the min detected photons for the circuit Sampler"""
+        self._min_detected_photons = new_min_detected_photons
+
+    @property
+    def noise_model(self):
+        """Noise model of photon source"""
+        return self._noise_model
+
+    @noise_model.setter
+    def noise_model(self, new_noise_model):
+        """Set the noise model for the photon source"""
+        self._noise_model = new_noise_model
+
+    @property
+    def job_name(self):
+        """Name of the computation job you are running,
+        this will be displayed in your Cloud Console"""
+        return self._job_name
+
+    @job_name.setter
+    def job_name(self, new_job_name):
+        """Set the new name for your computation job"""
+        self._job_name = new_job_name
+
+    @property
+    def job(self):
+        """Handle to the ongoing job"""
+        return self._job
+
     def __init__(self, wires: Union[int, Iterable[Union[int, str]]], shots: int, **kwargs):
         QubitDevice.__init__(self, wires=wires, shots=shots)
 
@@ -203,7 +274,7 @@ class PercevalDevice(QubitDevice):
         # Set default inner state
         self.reset()
 
-    # -- Interface of pennylane.QubitDevice and its parent
+    # -- Interface of pennylane.QubitDevice and its parent class -- #
     def apply(self, operations: list[Operation], **kwargs):
         """Create circuit from operations, compile the circuit (if applicable),
         and perform the quantum computation.
@@ -219,13 +290,30 @@ class PercevalDevice(QubitDevice):
             None
         """
         self._process_apply_kwargs(kwargs)
-        self.processor = self._pennylane_converter.convert(operations)
+        processor = self._pennylane_converter.convert(operations)
+        self._circuit = processor.linear_circuit()
+
+        if self.provider is not None:
+            # Setup remote processor
+            self._processor = self.provider.build_remote_processor()
+            self.processor.set_circuit(self._circuit)
+        else:
+            # Setup local processor
+            self._processor = processor
+
+        #pdisplay(processor, recursive=True, output_format=Format.TEXT)
+        self._submit_job()
 
     def generate_samples(self):
         """Generate samples from the device from the
         exact or approximate probability distribution.
         """
-        return self.samples_as_pennylane()
+
+        self._wait_for_job_to_complete()
+        results = self.job.get_results()
+        warn(f"Perceval job results: {results['results']}")
+
+        return self._format_results()
 
     def reset(self) -> None:
         """Reset the Perceval backend device
@@ -235,13 +323,17 @@ class PercevalDevice(QubitDevice):
         """
         # Reset only internal data, not the options that are determined on
         # device creation
-        self.processor = None
-    # ----------------------------- #
+        self._processor = None
+        self._min_detected_photons = None
+        self._noise_model = None
+        self._job_name = None
+        self._job = None
+    # ------------------------------------------------------------- #
 
-    def samples_as_pennylane(self):
-        """View of samples in PennyLane-compatible format
+    def _format_results(self):
+        """Format Perceval results to a PennyLane-compatible format
         """
-        raise NotImplementedError
+        return self.processor.probs()["results"]
 
     def _process_apply_kwargs(self, kwargs) -> None:
         """Processing the keyword arguments that were provided by PennyLane
@@ -250,3 +342,61 @@ class PercevalDevice(QubitDevice):
         Args:
             kwargs (dict): keyword arguments to be set for the device
         """
+
+    def _submit_job(self):
+        """Prepare and submit the computation job"""
+
+        if not self.min_detected_photons:
+            self.min_detected_photons = self.DEFAULT_MIN_DETECTED_PHOTONS
+
+        # Output state filering on the basis of detected photons
+        self.processor.min_detected_photons_filter(self.min_detected_photons)
+
+        # User is obligated to provide input state
+        if not self.input_state:
+            raise ValueError(
+                "Please set the input state. "+
+                "See `Remote Computing with Quandela Cloud` "+
+                "https://perceval.quandela.net/docs/v0.11/notebooks/Remote_computing.html")
+
+        self.processor.with_input(self._input_state)
+
+        if not self.noise_model:
+            self.noise_model = NoiseModel(
+                indistinguishability = self.DEFAULT_NOISE_MODEL_INDISTINGUISHABILITY,
+                transmittance = self.DEFAULT_NOISE_MODEL_TRANSMITTANCE,
+                g2 = self.DEFAULT_NOISE_MODEL_G2)
+
+        self.processor.noise = self.noise_model
+
+        # You have to set a 'max_shots_per_call' named parameter
+        # Here, with `min_detected_photons_filter` set to 1, all shots
+        # are de facto samples of interest. Thus, in this particular case,
+        # the expected sample number can be used as the shots threshold.
+        sampler = Sampler(self.processor, max_shots_per_call=self.shots)
+
+        # All jobs created by this sampler instance will have this custom name on the cloud
+        if not self.job_name:
+            self.job_name = self.DEFAULT_JOB_NAME
+
+        sampler.default_job_name = self.job_name
+
+        try:
+            self._job = sampler.sample_count.execute_async(self.shots)  # Create a job
+            # Once created, the job was assigned a unique id
+            if isinstance(self.job, LocalJob):
+                warn(f"Job submitted: {self._job}")
+            elif isinstance(self.job, RemoteJob):
+                warn(f"Job submitted: {self._job.id}")
+        except Exception as e:
+            raise Exception("Cannot submit the Job.") from e
+
+    def _wait_for_job_to_complete(self):
+        """Poll job status"""
+        while not self.job.is_complete:
+            sleep(1)
+
+        if isinstance(self.job, LocalJob):
+            warn(f"Job: {self._job}\n Status: {self.job.status()}\n")
+        elif isinstance(self.job, RemoteJob):
+            warn(f"Job: {self._job.id}\n Status: {self.job.status()}\n")
