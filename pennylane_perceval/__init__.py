@@ -33,3 +33,4 @@ This is the top level module from which all PennyLane-Perceval device classes ca
 
 from ._version import __version__
 from .device import PercevalDevice
+from .converter_pennylane import PennylaneConverter

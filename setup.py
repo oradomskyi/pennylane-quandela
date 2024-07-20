@@ -26,7 +26,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
 """Module providing installation routines."""
 
 from setuptools import setup
@@ -38,7 +37,10 @@ with open("pennylane_perceval/_version.py", encoding="utf-8") as f:
 # Requirements should be as minimal as possible.
 # Avoid pinning, and use minimum version numbers
 # only where required.
-requirements = ["pennylane>=0.37.0", "perceval-quandela>=0.10.5"]
+requirements = [
+    "pennylane>=0.37.0",
+    "perceval-quandela>=0.10.5"
+]
 
 with open("README.rst", encoding="utf-8") as f:
     long_description = f.read()
@@ -67,7 +69,7 @@ info = {
         ]
     },
     # Place a one line description here. This will be shown by pip
-    "description": "PennyLane plugin to access the Quandela cloud service.",
+    "description": "PennyLane plugin for Perceval",
     "long_description": long_description,
     # The name of the folder containing the plugin
     "provides": ["pennylane_perceval"],
