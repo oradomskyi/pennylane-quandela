@@ -90,7 +90,7 @@ class PennylaneConverter(AGateConverter):
 
     def count_qubits(self, gate_circuit: list[Operation] = None) -> int:
         """Implementation necessary for the converter base class"""
-        if self.num_qbits is None:
+        if self.num_qbits is None or gate_circuit is None:
             raise ValueError(
                 "Please set the number of qbits in the circuit"+
                 " you want to convert. Automatic inference of num_qbits"+
