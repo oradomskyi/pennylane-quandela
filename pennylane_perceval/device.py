@@ -60,17 +60,6 @@ from perceval.algorithm import Sampler
 from ._version import __version__
 from .converter_pennylane import PennylaneConverter
 
-############################################################################
-############################################################################
-from qiskit import *
-from qiskit.primitives import BackendSampler
-from qiskit_aer import Aer
-from qiskit.circuit import QuantumRegister, QuantumCircuit
-from pennylane import QubitDevice, device, matrix as qml_matrix
-
-from perceval import (pdisplay, Format)
-############################################################################
-############################################################################
 
 class PercevalDevice(QubitDevice):
     r"""Perceval device for PennyLane.
@@ -315,56 +304,6 @@ class PercevalDevice(QubitDevice):
 
         #pdisplay(processor, recursive=True, output_format=Format.TEXT)
         self._submit_job()
-   
-        ################################################################
-        ################################################################
-        self._wait_for_job_to_complete()
-        results = self.job.get_results()
-        warn(f"Perceval job results: {results['results']}")
-        print(results)
-        dist = self.processor.probs()["results"]
-        print(self.processor.probs())
-        print(dist)
-
-        print('create_circuit')
-        qiskit_device = device('qiskit.aer', wires=super().wires)
-
-        qiskit_device.create_circuit_object(operations)
-        qiskit_circuit = qiskit_device._circuit
-
-        print("qiskit_circuit")
-        print(qiskit_circuit)
-        print(type(qiskit_circuit), type(qiskit_circuit.data))
-        
-        #for i, instruction in enumerate(qiskit_circuit.data):
-        #    print(instruction[0].name)
-        #    if instruction[0].name not in ["h", "cx"]:
-        #del qiskit_circuit.data[3]
-        #del qiskit_circuit.data[3]
-        #del qiskit_circuit.data[3]
-
-        #qiskit_compiled_circuit = qiskit_device.compile()
-
-        #print("qiskit_compiled_circuit\n", qiskit_compiled_circuit)
-        #qiskit_compiled_circuit.draw()
-        qiskit_circuit.draw()
-        
-        #Changing the simulator 
-        backend = Aer.get_backend('aer_simulator')#('unitary_simulator')
-        print(backend)
-        sampler = BackendSampler(backend)
-        print(sampler)
-        qiskit_circuit = transpile(qiskit_circuit, backend=backend)
-        print(qiskit_circuit)
-        qiskit_job = sampler.run(qiskit_circuit)
-        
-        print("qiskit_job", qiskit_job)
-        qiskit_job_result = qiskit_job.result()
-        print("qiskit_job_result", qiskit_job_result)
-        qiskit_counts = qiskit_job_result.get_counts(qiskit_circuit)
-        print("qiskit_counts", qiskit_counts)
-        ################################################################
-        ################################################################
 
     def generate_samples(self):
         """Generate samples from the device from the
