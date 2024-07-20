@@ -58,7 +58,7 @@ from perceval import (
 from perceval.algorithm import Sampler
 
 from ._version import __version__
-from .pennylane_converter import PennylaneConverter
+from .converter_pennylane import PennylaneConverter
 
 
 class PercevalDevice(QubitDevice):
@@ -269,7 +269,8 @@ class PercevalDevice(QubitDevice):
         self._pennylane_converter = PennylaneConverter(
                     catalog = kwargs.get('catalog', None),
                     backend_name = kwargs.get('backend', None),
-                    source = kwargs.get('source', None))
+                    source = kwargs.get('source', None),
+                    num_qbits = len(self.wires))
 
         # Set default inner state
         self.reset()
