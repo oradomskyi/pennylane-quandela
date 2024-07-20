@@ -1,6 +1,6 @@
 # MIT License
 #
-# Copyright (c) 2022 Quandela
+# Copyright (c) 2024 Oleksandr Radomskyi
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -49,8 +49,8 @@ info = {
     # 'name' is the name that will be used by pip for installation
     "name": "PennyLane-Perceval",
     "version": version,
-    "maintainer": "Quandela",
-    "url": "https://www.quandela.com/",
+    "maintainer": "Oleksandr Radomskyi",
+    "url": "https://github.com/oradomskyi",
     "license": "MIT License",
     "packages": [
         # The name of the folder containing the plugin.
