@@ -270,7 +270,7 @@ class PercevalDevice(QubitDevice):
                     catalog = kwargs.get('catalog', None),
                     backend_name = kwargs.get('backend', None),
                     source = kwargs.get('source', None),
-                    num_qbits = len(self.wires))
+                    num_qubits = len(self.wires))
 
         # Set default inner state
         self.reset()

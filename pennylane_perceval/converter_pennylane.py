@@ -52,28 +52,28 @@ class PennylaneConverter(AGateConverter):
     :param catalog: a component library to use for the conversion. It must contain CNOT gates.
     :param backend_name: backend name used in the converted processor (default SLOS)
     :param source: the source used as input for the converted processor (default perfect source).
-    :param num_qbits: the number of qbits in the circuit to convert, automatic inference of this
+    :param num_qubits: the number of qubits in the circuit to convert, automatic inference of this
         number from list[pennylane.Operation] is not implemented yet.
     """
 
-    # Derivation of the number of qbits from input circuit, list[pennylane.Operation],
+    # Derivation of the number of qubits from input circuit, list[pennylane.Operation],
     # is not implemented yet.
-    _num_qbits = None
+    _num_qubits = None
 
     @property
-    def num_qbits(self) -> int:
-        """Number of QBits in the input circuit"""
-        return self._num_qbits
+    def num_qubits(self) -> int:
+        """Number of qubits in the input circuit"""
+        return self._num_qubits
 
-    @num_qbits.setter
-    def num_qbits(self, new_num_qbits) -> None:
-        """Set the number of qbits in the circuit to convert"""
-        self._num_qbits = new_num_qbits
+    @num_qubits.setter
+    def num_qubits(self, new_num_qubits) -> None:
+        """Set the number of qubits in the circuit to convert"""
+        self._num_qubits = new_num_qubits
 
     def __init__(self, catalog: Catalog = None,
         backend_name: str = None, # it is Backend responsibility to handle None
         source: Source = None,
-        num_qbits: int = None):
+        num_qubits: int = None):
         """Initializes PennyLane to Perceval gate converter"""
 
         if catalog and source:
@@ -86,21 +86,24 @@ class PennylaneConverter(AGateConverter):
             # not catalog and not source:
             super().__init__(default_catalog, backend_name, Source())
 
-        self._num_qbits = num_qbits
+        self._num_qubits = num_qubits
 
     def count_qubits(self, gate_circuit: list[Operation] = None) -> int:
         """Implementation necessary for the converter base class"""
-        if self.num_qbits is None or gate_circuit is None:
+        if self.num_qubits is None:
             raise ValueError(
-                "Please set the number of qbits in the circuit"+
-                " you want to convert. Automatic inference of num_qbits"+
+                "Please set the number of qubits in the circuit"+
+                " you want to convert. Automatic inference of num_qubits"+
                 " directly from the PennyLane circuit described as"+
                 " list[pennylane.Operation] is not implemented yet."+
-                "\n\nAdd argument num_qbits to the PennylaneConverter"+
-                " like this `converter = PennylaneConverter(num_qbits=2)`."+
-                "\nYou also can set it directly `converter.num_qbits = 2`\n")
+                "\n\nAdd argument num_qubits to the PennylaneConverter"+
+                " like this `converter = PennylaneConverter(num_qubits=2)`."+
+                "\nYou also can set it directly `converter.num_qubits = 2`\n")
 
-        return self.num_qbits
+        if gate_circuit is None:
+            raise ValueError(f"Cannot derive number of qubits from a crcuit which is {gate_circuit}.")
+
+        return self.num_qubits
 
     def convert(self, gate_circuit: list[Operation], use_postselection: bool = True) -> Processor:
         r"""Convert a PennyLane quantum circuit into a `Processor`.
@@ -127,17 +130,17 @@ class PennylaneConverter(AGateConverter):
             if instruction.name in NAME_PENNYLANE_MEASURE:
                 raise ValueError(f'Cannot convert {NAME_PENNYLANE_MEASURE} gate')
 
-            num_gate_qbits = len(instruction.wires)
-            if num_gate_qbits == 1:
+            num_gate_qubits = len(instruction.wires)
+            if num_gate_qubits == 1:
                 # one mode gate
                 instruction_mat = to_matrix(instruction) # np.ndarray
                 gate = self._create_generic_1_qubit_gate(instruction_mat)
                 gate.name = instruction.name
 
-                # pennylane.wires.Wires is an info about qbit positions
+                # pennylane.wires.Wires is an info about qubit positions
                 self._converted_processor.add(instruction.wires[0] * 2, gate.copy())
             else:
-                if num_gate_qbits > 2:
+                if num_gate_qubits > 2:
                     # only 2 qubit gates
                     raise ValueError("Gates with number of Qubits higher than 2 not implemented")
 
