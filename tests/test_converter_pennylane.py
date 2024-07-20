@@ -27,6 +27,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+# pylint: disable=protected-access,missing-function-docstring,missing-module-docstring
+
 import pytest
 
 try:
@@ -43,7 +45,6 @@ except ModuleNotFoundError as e:
 
 from perceval import BasicState, StateVector, Circuit
 import perceval.components.unitary_components as comp
-from perceval.components import catalog
 
 
 def test_basic_circuit_h():
