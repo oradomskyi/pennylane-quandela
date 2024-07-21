@@ -348,19 +348,16 @@ class PercevalDevice(QubitDevice):
         # [
         #  [0,1,0], [1,0,1], [0,1,0], [0,0,0], [1,0,1], [1,1,1], [1,1,1], [1,0,1], [0,1,0], [0,1,0]
         # ]
-
         results = self.job.get_results()['results']
-        #warn(f"Perceval job results: {results}\n\n")
-
-        # maybe pre-allocate this array?!
-        samples = []
+        samples = [ [0] * self.num_wires ] * self.shots
+        idx = 0
         for state in results:
-            q_state_key = self._state_to_int(state)
+            q_state_key = self._state_to_list_int(state)
             for _ in range(0, results[state]):
-                samples.append(q_state_key)
+                samples[idx] = q_state_key # copy instead of assignment
+                idx += 1
 
         samples  = vstack(samples)
-        print(samples)
         return samples
 
     def reset(self) -> None:
@@ -434,8 +431,8 @@ class PercevalDevice(QubitDevice):
         while not self.job.is_complete:
             sleep(1)
 
-    def _state_to_int(self, state) -> int:
-        """Transforms Fock state into integer
+    def _state_to_list_int(self, state) -> list[int]:
+        """Transforms Fock state into list of integers
 
         In spatial encoding, some Fock states don’t correspond to any qubit state.
         An example of such a Fock state |2,0> is where two photons are sent 
@@ -460,11 +457,11 @@ class PercevalDevice(QubitDevice):
         Quandela Ports are using 0-based numbering - so port 0 is corresponding 
         to the first line, port (m-1) is corresponding to the m-th line.
 
-        Examples:
-            |1,0>     -> 0
-            |0,1>     -> 1
-            |0,1,1,0> -> 2
-            |0,1,0,1> -> 3
+        Examples with 2-bit states:
+            |1,0,1,0> -> 0 -> [0 0]
+            |1,0,0,1> -> 1 -> [0 1]
+            |0,1,1,0> -> 2 -> [1 0]
+            |0,1,0,1> -> 3 -> [1 1]
         """
         f_state = str(state).replace(",", "")[1:-1]
 
@@ -477,6 +474,6 @@ class PercevalDevice(QubitDevice):
             elif f_state_list[i*2] == 0 and f_state_list[i*2 + 1] == 1:
                 q_state_list[i] = 1
             else:
-                raise ValueError(f"Cannot convert Fock state{state} to int!")
+                raise ValueError(f"Cannot convert Fock state{state} to quantum state!")
 
         return q_state_list
