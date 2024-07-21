@@ -471,9 +471,12 @@ class PercevalDevice(QubitDevice):
         for i in range(0, self.num_wires):
             if f_state_list[i*2] == 1 and f_state_list[i*2 + 1] == 0:
                 q_state_list[i] = 0
-            elif f_state_list[i*2] == 0 and f_state_list[i*2 + 1] == 1:
+                continue
+
+            if f_state_list[i*2] == 0 and f_state_list[i*2 + 1] == 1:
                 q_state_list[i] = 1
-            else:
-                raise ValueError(f"Cannot convert Fock state{state} to quantum state!")
+                continue
+
+            raise ValueError(f"Cannot convert Fock state{state} to quantum state!")
 
         return q_state_list
