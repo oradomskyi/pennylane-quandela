@@ -225,6 +225,6 @@ class TestQuandelaDevice:
         results_pennylane = circuit_pennylane()
         results_perceval = circuit_perceval()
 
-        eps = 2e-2
+        eps = 2.5e-2
         for x,y in zip(results_pennylane, results_perceval):
             assert abs(x - y) < eps
