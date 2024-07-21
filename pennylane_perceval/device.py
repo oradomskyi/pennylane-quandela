@@ -38,7 +38,6 @@ This module contains a base class for constructing Perceval devices for PennyLan
 
 from typing import Union, Iterable
 from time import sleep
-from warnings import warn
 
 from numpy import vstack, array as np_array
 
@@ -52,9 +51,7 @@ from perceval import (
     ProviderFactory,
     Processor,
     Circuit,
-    NoiseModel,
-    LocalJob,
-    RemoteJob
+    NoiseModel
 )
 
 from perceval.algorithm import Sampler
@@ -429,11 +426,6 @@ class PercevalDevice(QubitDevice):
 
         try:
             self._job = sampler.sample_count.execute_async(self.shots)  # Create a job
-            # Once created, the job was assigned a unique id
-            #if isinstance(self.job, LocalJob):
-            #    warn(f"Job submitted: {self.job}")
-            #elif isinstance(self.job, RemoteJob):
-            #    warn(f"Job submitted: {self.job.id}")
         except Exception as e:
             raise Exception("Cannot submit the Job.") from e
 
@@ -441,11 +433,6 @@ class PercevalDevice(QubitDevice):
         """Poll job status"""
         while not self.job.is_complete:
             sleep(1)
-
-        #if isinstance(self.job, LocalJob):
-        #    warn(f"Job: {self.job}\n Status: {self.job.status()}\n")
-        #elif isinstance(self.job, RemoteJob):
-        #    warn(f"Job: {self.job.id}\n Status: {self.job.status()}\n")
 
     def _state_to_int(self, state) -> int:
         """Transforms Fock state into integer
