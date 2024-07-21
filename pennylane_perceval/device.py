@@ -430,10 +430,10 @@ class PercevalDevice(QubitDevice):
         try:
             self._job = sampler.sample_count.execute_async(self.shots)  # Create a job
             # Once created, the job was assigned a unique id
-            if isinstance(self.job, LocalJob):
-                warn(f"Job submitted: {self.job}")
-            elif isinstance(self.job, RemoteJob):
-                warn(f"Job submitted: {self.job.id}")
+            #if isinstance(self.job, LocalJob):
+            #    warn(f"Job submitted: {self.job}")
+            #elif isinstance(self.job, RemoteJob):
+            #    warn(f"Job submitted: {self.job.id}")
         except Exception as e:
             raise Exception("Cannot submit the Job.") from e
 
@@ -442,10 +442,10 @@ class PercevalDevice(QubitDevice):
         while not self.job.is_complete:
             sleep(1)
 
-        if isinstance(self.job, LocalJob):
-            warn(f"Job: {self.job}\n Status: {self.job.status()}\n")
-        elif isinstance(self.job, RemoteJob):
-            warn(f"Job: {self.job.id}\n Status: {self.job.status()}\n")
+        #if isinstance(self.job, LocalJob):
+        #    warn(f"Job: {self.job}\n Status: {self.job.status()}\n")
+        #elif isinstance(self.job, RemoteJob):
+        #    warn(f"Job: {self.job.id}\n Status: {self.job.status()}\n")
 
     def _state_to_int(self, state) -> int:
         """Transforms Fock state into integer
