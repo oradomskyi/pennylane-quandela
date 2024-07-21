@@ -26,7 +26,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-"""Tests for the PercevalDevice class"""
+"""Tests for the QuandelaDevice class"""
 
 # pylint: disable=protected-access
 
@@ -38,7 +38,7 @@ import pennylane as qml
 from perceval.backends import BackendFactory
 from perceval import ABackend, BasicState
 
-from pennylane_perceval import QuandelaDevice
+from pennylane_quandela import QuandelaDevice
 
 
 class TestQuandelaDevice:
