@@ -125,7 +125,7 @@ class PercevalDevice(QubitDevice):
     pennylane_requires = ">=0.37.0"
     version = __version__
     plugin_version = __version__
-    author = "Quandela"
+    author = "Oleksandr Radomskyi"
 
     _capabilities = {
         "model": "qubit",
