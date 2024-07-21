@@ -359,7 +359,7 @@ class PercevalDevice(QubitDevice):
         samples = []
         for state in results:
             q_state_key = self._state_to_int(state)
-            for j in range(0, results[state]):
+            for _ in range(0, results[state]):
                 samples.append(q_state_key)
 
         samples  = vstack(samples)
