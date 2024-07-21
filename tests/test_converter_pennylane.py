@@ -38,10 +38,10 @@ except ModuleNotFoundError as e:
     pytest.skip("need `pennylane` module", allow_module_level=True)
 
 try:
-    from pennylane_perceval import PennylaneConverter
+    from pennylane_quandela import PennylaneConverter
 except ModuleNotFoundError as e:
-    assert e.name == "pennylane_perceval"
-    pytest.skip("need `pennylane_perceval` module", allow_module_level=True)
+    assert e.name == "pennylane_quandela"
+    pytest.skip("need `pennylane_quandela` module", allow_module_level=True)
 
 from perceval import BasicState, StateVector, Circuit
 import perceval.components.unitary_components as comp
@@ -189,7 +189,7 @@ def test_cnot_postprocess():
     qc.append(qml.Hadamard(wires=[0]))
 
     # Derivation of number of qbits directly from PennyLane quantum
-    # circuit is not implemented yet, we nned to update it manually
+    # circuit is not implemented yet, we need to update it manually
     converter.num_qubits = converter.num_qubits + 1
 
     pc = converter.convert(qc, use_postselection=True)

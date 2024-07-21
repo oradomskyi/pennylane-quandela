@@ -28,9 +28,9 @@
 # SOFTWARE.
 
 """
-This is the top level module from which all PennyLane-Perceval device classes can be imported.
+This is the top level module from which all PennyLane-Quandela device classes can be imported.
 """
 
 from ._version import __version__
-from .device import PercevalDevice
+from .device import QuandelaDevice
 from .converter_pennylane import PennylaneConverter

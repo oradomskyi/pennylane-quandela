@@ -38,18 +38,18 @@ import pennylane as qml
 from perceval.backends import BackendFactory
 from perceval import ABackend, BasicState
 
-from pennylane_perceval import PercevalDevice
+from pennylane_perceval import QuandelaDevice
 
 
-class TestPercevalDevice:
-    """Tests for the PercevalDevice base class."""
+class TestQuandelaDevice:
+    """Tests for the QuandelaDevice base class."""
 
     @pytest.mark.parametrize("wires", [1, 3])
     @pytest.mark.parametrize("shots", [1, 100])
     def test_init_no_kwargs(self, wires , shots):
         """Tests that the device is properly initialized."""
 
-        device = PercevalDevice(wires=wires, shots=shots)
+        device = QuandelaDevice(wires=wires, shots=shots)
 
         assert device.num_wires == wires
         assert device.shots == shots
@@ -63,7 +63,7 @@ class TestPercevalDevice:
     def test_init_with_backend(self, wires, shots, backend_name):
         """Tests that the device is properly initialized."""
 
-        device = PercevalDevice(wires=wires, shots=shots, backend=backend_name)
+        device = QuandelaDevice(wires=wires, shots=shots, backend=backend_name)
 
         assert device.num_wires == wires
         assert device.shots == shots
@@ -74,7 +74,7 @@ class TestPercevalDevice:
     def test_reset(self):
         """Tests that device is properly reset"""
 
-        device = PercevalDevice(1, 1)
+        device = QuandelaDevice(1, 1)
         device.reset()
 
         assert device.processor is None
@@ -83,7 +83,7 @@ class TestPercevalDevice:
         """Test if device can convert specific Fock states
         into quantum states.
         """
-        device = PercevalDevice(wires=1, shots=1)
+        device = QuandelaDevice(wires=1, shots=1)
         valid_states = [
             BasicState([1,0]),
             BasicState([0,1]),
@@ -104,7 +104,7 @@ class TestPercevalDevice:
         """Test if device can convert specific Fock states
         into quantum states.
         """
-        device = PercevalDevice(wires=2, shots=1)
+        device = QuandelaDevice(wires=2, shots=1)
         valid_states = [
             BasicState([1,0,1,0]),
             BasicState([1,0,0,1]),
@@ -129,7 +129,7 @@ class TestPercevalDevice:
         """Test that device cannot convert specific Fock states
         into quantum states and raises ValueError.
         """
-        device = PercevalDevice(wires=1, shots=1)
+        device = QuandelaDevice(wires=1, shots=1)
 
         invalid_q_states = [
             BasicState([0,0]),
@@ -147,7 +147,7 @@ class TestPercevalDevice:
         """Test that device cannot convert specific Fock states
         into quantum states and raises ValueError.
         """
-        device = PercevalDevice(wires=2, shots=1)
+        device = QuandelaDevice(wires=2, shots=1)
 
         invalid_q_states = [
             BasicState([0,1,1,1]),
@@ -170,7 +170,7 @@ class TestPercevalDevice:
         dev_pennylane = qml.device("default.qubit", wires=wires)
 
         test_input = BasicState([1,0,1,0,1,0])
-        dev_perceval = PercevalDevice(wires=wires, shots=1024, backend='SLOS')
+        dev_perceval = QuandelaDevice(wires=wires, shots=1024, backend='SLOS')
         dev_perceval.input_state = test_input
 
         @qml.qnode(dev_pennylane)
@@ -205,7 +205,7 @@ class TestPercevalDevice:
         dev_pennylane = qml.device("default.qubit", wires=wires)
 
         test_input = BasicState([1,0,1,0])
-        dev_perceval = PercevalDevice(wires=wires, shots=1024, backend='SLOS')
+        dev_perceval = QuandelaDevice(wires=wires, shots=1024, backend='SLOS')
         dev_perceval.input_state = test_input
 
         @qml.qnode(dev_pennylane)

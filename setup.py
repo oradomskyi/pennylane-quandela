@@ -30,7 +30,7 @@
 
 from setuptools import setup
 
-with open("pennylane_perceval/_version.py", encoding="utf-8") as f:
+with open("pennylane_quandela/_version.py", encoding="utf-8") as f:
     version = f.readlines()[-1].split()[-1].strip("\"'")
 
 # Put pip installation requirements here.
@@ -47,7 +47,7 @@ with open("README.rst", encoding="utf-8") as f:
 
 info = {
     # 'name' is the name that will be used by pip for installation
-    "name": "PennyLane-Perceval",
+    "name": "PennyLane-Quandela",
     "version": version,
     "maintainer": "Oleksandr Radomskyi",
     "url": "https://github.com/oradomskyi",
@@ -56,7 +56,7 @@ info = {
         # The name of the folder containing the plugin.
         # This is the name that will be used when importing
         # the plugin in Python.
-        "pennylane_perceval"
+        "pennylane_quandela"
     ],
     "entry_points": {
         "pennylane.plugins": [
@@ -65,14 +65,14 @@ info = {
             # it corresponds to in the plugin. This allows
             # the device to be imported automatically via the
             # `pennylane.device` device loader.
-            "perceval.dev = pennylane_perceval:PercevalDevice",
+            "quandela.dev = pennylane_quandela:QuandelaDevice",
         ]
     },
     # Place a one line description here. This will be shown by pip
-    "description": "PennyLane plugin for Perceval",
+    "description": "PennyLane plugin for Quandela Perceval",
     "long_description": long_description,
     # The name of the folder containing the plugin
-    "provides": ["pennylane_perceval"],
+    "provides": ["pennylane_quandela"],
     "install_requires": requirements,
 }
 

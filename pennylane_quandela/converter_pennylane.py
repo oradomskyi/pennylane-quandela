@@ -27,10 +27,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 """
-PennyLane-Perceval quantum circuit converter
+PennyLane-Quandela quantum circuit converter
 ========================================
 
-This module contains a conveter class for constructing Perceval Processor using
+This module contains a conveter class for constructing Quandela Perceval Processor using
 PennyLane desciption of a quantum circuit.
 
 """

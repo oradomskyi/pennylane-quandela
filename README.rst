@@ -1,13 +1,13 @@
-PennyLane-Perceval Plugin
+PennyLane-Quandela Plugin
 #########################
 
-.. image:: https://www.codefactor.io/repository/github/oradomskyi/pennylane-perceval/badge
-   :target: https://www.codefactor.io/repository/github/oradomskyi/pennylane-perceval
+.. image:: https://www.codefactor.io/repository/github/oradomskyi/pennylane-quandela/badge
+   :target: https://www.codefactor.io/repository/github/oradomskyi/pennylane-quandela
    :alt: CodeFactor
 
 .. header-start-inclusion-marker-do-not-remove
 
-The PennyLane-Perceval plugin integrates the Quandela Perceval quantum computing framework with PennyLane's
+The PennyLane-Quandela plugin integrates the Quandela Perceval quantum computing framework with PennyLane's
 quantum machine learning capabilities.
 
 `PennyLane <https://pennylane.readthedocs.io>`_ is a cross-platform Python library for quantum machine
@@ -22,12 +22,12 @@ learning, automatic differentiation, and optimization of hybrid quantum-classica
 Installation
 ============
 
-This plugin requires Python version 3.9 and above, as well as PennyLane and Perceval.
+This plugin requires Python version 3.9 and above, as well as PennyLane and Quandela Perceval.
 Installation of this plugin, as well as all dependencies could be done manually:
 
 .. code-block:: bash
 
-    git clone https://github.com/oradomskyi/pennylane-perceval
+    git clone https://github.com/oradomskyi/pennylane-quandela
 
 then to install plugin:
 

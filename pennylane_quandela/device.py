@@ -28,10 +28,10 @@
 # SOFTWARE.
 
 """
-Perceval device class
+Quandela device class
 ========================================
 
-This module contains a base class for constructing Perceval devices for PennyLane.
+This module contains a base class for constructing Quandela devices for PennyLane.
 
 """
 # pylint: disable=too-many-instance-attributes,broad-exception-raised
@@ -60,8 +60,8 @@ from ._version import __version__
 from .converter_pennylane import PennylaneConverter
 
 
-class PercevalDevice(QubitDevice):
-    r"""Perceval device for PennyLane.
+class QuandelaDevice(QubitDevice):
+    r"""Quandela device for PennyLane.
 
     Quandela photonic circuits use Fock states to represent a quantum system.
     One natural way to encode qubits is the path encoding. A qubit is a two-level quantum state,
@@ -120,8 +120,8 @@ class PercevalDevice(QubitDevice):
         >>> load_dotenv('.env_perceval')
         >>> my_token = os.environ.get('PERCEVAL_TOKEN')
     """
-    name = "Perceval PennyLane plugin"
-    short_name = "perceval.device"
+    name = "Quandela PennyLane plugin"
+    short_name = "quandela.device"
     pennylane_requires = ">=0.37.0"
     version = __version__
     plugin_version = __version__
