@@ -32,10 +32,14 @@
 
 import pytest
 
-from pennylane_perceval import PercevalDevice
+from numpy import array as np_array
+import pennylane as qml
 
 from perceval.backends import BackendFactory
-from perceval import ABackend
+from perceval import ABackend, BasicState
+
+from pennylane_perceval import PercevalDevice
+
 
 class TestPercevalDevice:
     """Tests for the PercevalDevice base class."""
@@ -74,3 +78,72 @@ class TestPercevalDevice:
         device.reset()
 
         assert device.processor is None
+
+    def test_qnode_probs_1(self):
+        """Test correctness of circuit execution 
+        Perceval vs PennyLane
+        """
+        wires=3
+        weights = np_array([0.1, 0.2, 0.7])
+
+        dev_pennylane = qml.device("default.qubit", wires=wires)
+
+        test_input = BasicState([1,0,1,0,1,0])
+        dev_perceval = PercevalDevice(wires=wires, shots=1024, backend='SLOS')
+        dev_perceval.input_state = test_input
+
+        @qml.qnode(dev_pennylane)
+        def circuit_pennylane(weights):
+            qml.RX(weights[0], wires=0)
+            qml.RY(weights[1], wires=1)
+            qml.CNOT(wires=[0, 1])
+            qml.RX(weights[2], wires=1)
+            return qml.probs(wires=1)
+
+        @qml.qnode(dev_perceval)
+        def circuit_perceval(weights):
+            qml.RX(weights[0], wires=0)
+            qml.RY(weights[1], wires=1)
+            qml.CNOT(wires=[0, 1])
+            qml.RX(weights[2], wires=1)
+            return qml.probs(wires=1)
+
+        results_pennylane = circuit_pennylane(weights)
+        results_perceval = circuit_perceval(weights)
+
+        eps = 2e-2
+        for x,y in zip(results_pennylane, results_perceval):
+            assert abs(x - y) < eps
+
+    def test_qnode_probs_2(self):
+        """Test correctness of circuit execution 
+        Perceval vs PennyLane
+        """
+        wires=2
+
+        dev_pennylane = qml.device("default.qubit", wires=wires)
+
+        test_input = BasicState([1,0,1,0])
+        dev_perceval = PercevalDevice(wires=wires, shots=1024, backend='SLOS')
+        dev_perceval.input_state = test_input
+
+        @qml.qnode(dev_pennylane)
+        def circuit_pennylane():
+            qml.Hadamard(wires=0)
+            qml.Hadamard(wires=1)
+            qml.CNOT(wires=[0, 1])
+            return qml.probs(wires=1)
+
+        @qml.qnode(dev_perceval)
+        def circuit_perceval():
+            qml.Hadamard(wires=0)
+            qml.Hadamard(wires=1)
+            qml.CNOT(wires=[0, 1])
+            return qml.probs(wires=1)
+
+        results_pennylane = circuit_pennylane()
+        results_perceval = circuit_perceval()
+
+        eps = 2e-2
+        for x,y in zip(results_pennylane, results_perceval):
+            assert abs(x - y) < eps
