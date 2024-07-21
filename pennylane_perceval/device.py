@@ -467,7 +467,7 @@ class PercevalDevice(QubitDevice):
             ValueError if state has no photons for a qubit like |0,0>
             when there are several photons in one state line |2,0>
 
-        Note that PennyLane uses the convention :math:`|q_0,q_1,\dots,q_{N-1}\rangle` where
+        Note that PennyLane uses the convention :math:`|q_0,q_1, ... ,q_{N-1}>` where
         :math:`q_0` is the most significant bit.
 
         Quandela Ports are using 0-based numbering - so port 0 is corresponding 
