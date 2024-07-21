@@ -79,6 +79,87 @@ class TestPercevalDevice:
 
         assert device.processor is None
 
+    def test_state_to_list_valid_inputs_1_wire(self):
+        """Test if device can convert specific Fock states
+        into quantum states.
+        """
+        device = PercevalDevice(wires=1, shots=1)
+        valid_states = [
+            BasicState([1,0]),
+            BasicState([0,1]),
+        ]
+
+        expected_valid_stated = [
+            [0],
+            [1],
+        ]
+
+        for a, b in zip(valid_states, expected_valid_stated):
+            state_list = device._state_to_list_int(a)
+            assert isinstance(state_list, list)
+            for x, y in zip(state_list, b):
+                assert x == y
+
+    def test_state_to_list_valid_inputs_2_wires(self):
+        """Test if device can convert specific Fock states
+        into quantum states.
+        """
+        device = PercevalDevice(wires=2, shots=1)
+        valid_states = [
+            BasicState([1,0,1,0]),
+            BasicState([1,0,0,1]),
+            BasicState([0,1,1,0]),
+            BasicState([0,1,0,1])
+        ]
+
+        expected_valid_stated = [
+            [0,0],
+            [0,1],
+            [1,0],
+            [1,1]
+        ]
+
+        for a, b in zip(valid_states, expected_valid_stated):
+            state_list = device._state_to_list_int(a)
+            assert isinstance(state_list, list)
+            for x, y in zip(state_list, b):
+                assert x == y
+
+    def test_state_to_list_invalid_inputs_1_wires(self):
+        """Test that device cannot convert specific Fock states
+        into quantum states and raises ValueError.
+        """
+        device = PercevalDevice(wires=1, shots=1)
+
+        invalid_q_states = [
+            BasicState([0,0]),
+            BasicState([1,1]),
+            BasicState([2,0]),
+            BasicState([0,3]),
+            BasicState([1,2])
+        ]
+
+        for state in invalid_q_states:
+            with pytest.raises(ValueError):
+                device._state_to_list_int(state)
+
+    def test_state_to_list_invalid_inputs_2_wires(self):
+        """Test that device cannot convert specific Fock states
+        into quantum states and raises ValueError.
+        """
+        device = PercevalDevice(wires=2, shots=1)
+
+        invalid_q_states = [
+            BasicState([0,1,1,1]),
+            BasicState([2,0,0,1]),
+            BasicState([0,0,0,0]),
+            BasicState([9,4,2,3])
+        ]
+
+        for state in invalid_q_states:
+            with pytest.raises(ValueError):
+                device._state_to_list_int(state)
+
     def test_qnode_probs_1(self):
         """Test correctness of circuit execution 
         Perceval vs PennyLane
