@@ -449,7 +449,14 @@ class PercevalDevice(QubitDevice):
 
     def _state_to_int(self, state) -> int:
         """Transforms Fock state into integer
-        
+
+        In spatial encoding, some Fock states don’t correspond to any qubit state.
+        An example of such a Fock state |2,0> is where two photons are sent 
+        in path 0 and no photon in path 1.
+
+        More generally, any state which is not a superposition of Fock states
+        |1,0> and |0,1> cannot be associated with a qubit state.
+
         Args:
             :param state:  resresentation os a Fock state
 
@@ -457,19 +464,24 @@ class PercevalDevice(QubitDevice):
             int representation of a Fock state
 
         Raises:
-            ValueError if state has no photons for aqubit like |0,0>
-            when there are sevral photons in one state line |2,0>
+            ValueError if state has no photons for a qubit like |0,0>
+            when there are several photons in one state line |2,0>
+
+        Note that PennyLane uses the convention :math:`|q_0,q_1,\dots,q_{N-1}\rangle` where
+        :math:`q_0` is the most significant bit.
+
+        Quandela Ports are using 0-based numbering - so port 0 is corresponding 
+        to the first line, port (m-1) is corresponding to the m-th line.
 
         Examples:
-            |1,0> -> 0
-            |0,1> -> 1
+            |1,0>     -> 0
+            |0,1>     -> 1
             |0,1,1,0> -> 2
             |0,1,0,1> -> 3
         """
         f_state = str(state).replace(",", "")[1:-1]
 
-        # TODO: do we need to invert bits?
-        f_state_list = np_array([int(i) for i in f_state[::-1]])
+        f_state_list = np_array([int(i) for i in f_state])
 
         q_state_list = [0] * self.num_wires
         for i in range(0, self.num_wires):
