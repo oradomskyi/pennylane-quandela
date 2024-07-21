@@ -40,6 +40,8 @@ from typing import Union, Iterable
 from time import sleep
 from warnings import warn
 
+from numpy import vstack, array as np_array
+
 from pennylane import QubitDevice
 from pennylane.operation import Operation
 
@@ -63,6 +65,16 @@ from .converter_pennylane import PennylaneConverter
 
 class PercevalDevice(QubitDevice):
     r"""Perceval device for PennyLane.
+
+    Quandela photonic circuits use Fock states to represent a quantum system.
+    One natural way to encode qubits is the path encoding. A qubit is a two-level quantum state,
+    so we will use two spatial modes to encode it: this is the dual-rail or path encoding.
+    
+    The logical qubit state |0> will correspond to a photon in the upper mode,
+    as in the Fock state |1,0>, while logical qubit state |1> will be encoded as |0,1> Fock state.
+
+    Read more:
+        https://perceval.quandela.net/docs/
 
     Args:
         :param wires: (int or Iterable[Number,str]]) Number of subsystems represented by the device,
@@ -151,7 +163,7 @@ class PercevalDevice(QubitDevice):
     _job_name = None
     _job = None
 
-    DEFAULT_MIN_DETECTED_PHOTONS = 1
+    DEFAULT_MIN_DETECTED_PHOTONS = 0
     DEFAULT_NOISE_MODEL_INDISTINGUISHABILITY = .95
     DEFAULT_NOISE_MODEL_TRANSMITTANCE = .1
     DEFAULT_NOISE_MODEL_G2 = .01
@@ -215,7 +227,13 @@ class PercevalDevice(QubitDevice):
 
     @min_detected_photons.setter
     def min_detected_photons(self, new_min_detected_photons):
-        """Set the min detected photons for the circuit Sampler"""
+        """Set the min detected photons for the circuit.
+        
+        Read more about photon detection, in real devices it is sometimes necessary
+        to use detected-photons threshold to filter out the results.
+
+        https://perceval.quandela.net/
+        """
         self._min_detected_photons = new_min_detected_photons
 
     @property
@@ -291,7 +309,10 @@ class PercevalDevice(QubitDevice):
             None
         """
         self._process_apply_kwargs(kwargs)
+
+        #TODO: Do we want to expose use_postselection param to user ?
         processor = self._pennylane_converter.convert(operations)
+
         self._circuit = processor.linear_circuit()
 
         if self.provider is not None:
@@ -302,19 +323,48 @@ class PercevalDevice(QubitDevice):
             # Setup local processor
             self._processor = processor
 
-        #pdisplay(processor, recursive=True, output_format=Format.TEXT)
         self._submit_job()
+        self._wait_for_job_to_complete()
 
     def generate_samples(self):
         """Generate samples from the device from the
         exact or approximate probability distribution.
         """
+        # Consider example 3-wire, 10 shot logical qubit system:
+        #
+        # Perceval sample counts are a dict
+        # {
+        #   |1,0,1,0,1,0>: 1,
+        #   |1,0,0,1,1,0>: 4,
+        #   |0,1,1,0,0,1>: 3,
+        #   |0,1,0,1,0,1>: 2
+        # }
+        #
+        # Qiskit samples for this system would be list of strings
+        # [
+        #   '010', '101', '010', '000', '101', '111', '111', '101', '010', '010'
+        # ]
+        #
+        # PennyLane expect samples as list of lists of integers
+        # np.vstack( [ np.array([int ...]) np.array([int ...]) ...] )
+        #
+        # [
+        #  [0,1,0], [1,0,1], [0,1,0], [0,0,0], [1,0,1], [1,1,1], [1,1,1], [1,0,1], [0,1,0], [0,1,0]
+        # ]
 
-        self._wait_for_job_to_complete()
-        results = self.job.get_results()
-        warn(f"Perceval job results: {results['results']}")
+        results = self.job.get_results()['results']
+        #warn(f"Perceval job results: {results}\n\n")
 
-        return self._format_results()
+        # maybe pre-allocate this array?!
+        samples = []
+        for state in results:
+            q_state_key = self._state_to_int(state)
+            for j in range(0, results[state]):
+                samples.append(q_state_key)
+
+        samples  = vstack(samples)
+        print(samples)
+        return samples
 
     def reset(self) -> None:
         """Reset the Perceval backend device
@@ -331,11 +381,6 @@ class PercevalDevice(QubitDevice):
         self._job = None
     # ------------------------------------------------------------- #
 
-    def _format_results(self):
-        """Format Perceval results to a PennyLane-compatible format
-        """
-        return self.processor.probs()["results"]
-
     def _process_apply_kwargs(self, kwargs) -> None:
         """Processing the keyword arguments that were provided by PennyLane
         when calling an apply() function.
@@ -348,7 +393,7 @@ class PercevalDevice(QubitDevice):
         """Prepare and submit the computation job"""
 
         if not self.min_detected_photons:
-            self.min_detected_photons = self.DEFAULT_MIN_DETECTED_PHOTONS
+            self._min_detected_photons = self.DEFAULT_MIN_DETECTED_PHOTONS
 
         # Output state filering on the basis of detected photons
         self.processor.min_detected_photons_filter(self.min_detected_photons)
@@ -360,10 +405,10 @@ class PercevalDevice(QubitDevice):
                 "See `Remote Computing with Quandela Cloud` "+
                 "https://perceval.quandela.net/docs/v0.11/notebooks/Remote_computing.html")
 
-        self.processor.with_input(self._input_state)
+        self.processor.with_input(self.input_state)
 
         if not self.noise_model:
-            self.noise_model = NoiseModel(
+            self._noise_model = NoiseModel(
                 indistinguishability = self.DEFAULT_NOISE_MODEL_INDISTINGUISHABILITY,
                 transmittance = self.DEFAULT_NOISE_MODEL_TRANSMITTANCE,
                 g2 = self.DEFAULT_NOISE_MODEL_G2)
@@ -378,7 +423,7 @@ class PercevalDevice(QubitDevice):
 
         # All jobs created by this sampler instance will have this custom name on the cloud
         if not self.job_name:
-            self.job_name = self.DEFAULT_JOB_NAME
+            self._job_name = self.DEFAULT_JOB_NAME
 
         sampler.default_job_name = self.job_name
 
@@ -386,9 +431,9 @@ class PercevalDevice(QubitDevice):
             self._job = sampler.sample_count.execute_async(self.shots)  # Create a job
             # Once created, the job was assigned a unique id
             if isinstance(self.job, LocalJob):
-                warn(f"Job submitted: {self._job}")
+                warn(f"Job submitted: {self.job}")
             elif isinstance(self.job, RemoteJob):
-                warn(f"Job submitted: {self._job.id}")
+                warn(f"Job submitted: {self.job.id}")
         except Exception as e:
             raise Exception("Cannot submit the Job.") from e
 
@@ -398,6 +443,41 @@ class PercevalDevice(QubitDevice):
             sleep(1)
 
         if isinstance(self.job, LocalJob):
-            warn(f"Job: {self._job}\n Status: {self.job.status()}\n")
+            warn(f"Job: {self.job}\n Status: {self.job.status()}\n")
         elif isinstance(self.job, RemoteJob):
-            warn(f"Job: {self._job.id}\n Status: {self.job.status()}\n")
+            warn(f"Job: {self.job.id}\n Status: {self.job.status()}\n")
+
+    def _state_to_int(self, state) -> int:
+        """Transforms Fock state into integer
+        
+        Args:
+            :param state:  resresentation os a Fock state
+
+        Returns:
+            int representation of a Fock state
+
+        Raises:
+            ValueError if state has no photons for aqubit like |0,0>
+            when there are sevral photons in one state line |2,0>
+
+        Examples:
+            |1,0> -> 0
+            |0,1> -> 1
+            |0,1,1,0> -> 2
+            |0,1,0,1> -> 3
+        """
+        f_state = str(state).replace(",", "")[1:-1]
+
+        # TODO: do we need to invert bits?
+        f_state_list = np_array([int(i) for i in f_state[::-1]])
+
+        q_state_list = [0] * self.num_wires
+        for i in range(0, self.num_wires):
+            if f_state_list[i*2] == 1 and f_state_list[i*2 + 1] == 0:
+                q_state_list[i] = 0
+            elif f_state_list[i*2] == 0 and f_state_list[i*2 + 1] == 1:
+                q_state_list[i] = 1
+            else:
+                raise ValueError(f"Cannot convert Fock state{state} to int!")
+
+        return q_state_list
