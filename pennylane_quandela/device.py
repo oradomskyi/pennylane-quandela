@@ -265,21 +265,15 @@ class QuandelaDevice(QubitDevice):
         # This will fall back on SLOS when no backend found
         self._backend = BackendFactory.get_backend(kwargs.get('backend', None))
 
-        provider = kwargs.get('provider', None)
-        platform = kwargs.get('platform', None)
-        api_token = kwargs.get('api_token', None)
-        if (provider is not None and
-            platform is not None and
-            api_token is not None):
+        provider_name = kwargs.get('provider_name', None)
+        if provider_name is not None:
             try:
-                self._provider = ProviderFactory.get_provider(provider_name=provider,
-                    platform_name=platform,
-                    token=api_token)
+                self._provider = ProviderFactory.get_provider(**kwargs)
             except Exception as e:
                 raise Exception(
-                    f"Cannot connect to provider {provider}" +
-                    f"platform {platform}" +
-                    f"with token {api_token}") from e
+                    f"Cannot connect to provider {provider_name}. "+
+                    f"Args you passed are:\nkwargs={[ f'{k}:{v}' for k,v in kwargs.items()]}\n"
+                ) from e
 
         self._pennylane_converter = PennylaneConverter(
                     catalog = kwargs.get('catalog', None),
