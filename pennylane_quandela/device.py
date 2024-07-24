@@ -265,14 +265,13 @@ class QuandelaDevice(QubitDevice):
         # This will fall back on SLOS when no backend found
         self._backend = BackendFactory.get_backend(kwargs.get('backend', None))
 
-        provider_name = kwargs.get('provider_name', None)
-        if provider_name is not None:
+        if kwargs.get('provider_name', None) is not None:
             try:
                 self._provider = ProviderFactory.get_provider(**kwargs)
             except Exception as e:
                 raise Exception(
-                    f"Cannot connect to provider {provider_name}. "+
-                    f"Args you passed are:\nkwargs={[ f'{k}:{v}' for k,v in kwargs.items()]}\n"
+                    "Cannot connect to a cloud provider, " +
+                    f"settings are:{[ f'{k}:{v}' for k,v in kwargs.items()]}\n"
                 ) from e
 
         self._pennylane_converter = PennylaneConverter(
