@@ -92,6 +92,15 @@ class QuandelaDevice(QubitDevice):
             For more see `Providers` section:
                 https://perceval.quandela.net/docs/
 
+        :param source: (Source | None) single photon source, defined by specifying parameters
+            such as `brightness`, `purity` or `indistinguishability`.
+            For more infor see `Sources` sction:
+            https://perceval.quandela.net/docs/
+
+        ``Quandela Cloud`` related arguments
+
+            https://cloud.quandela.com/
+
         :param platform: (str | None) name of cloud computing platform.
             For more info see compatible cloud platforms in the `Providers` section:
                 https://perceval.quandela.net/docs/
@@ -99,13 +108,28 @@ class QuandelaDevice(QubitDevice):
         :param api_token: (str | None) API token obtained from Quandela Cloud Provider 
             if token is not provided, computation will run locally.
         
-        :param source: (Source | None) single photon source, defined by specifying parameters
-            such as `brightness`, `purity` or `indistinguishability`.
-            For more infor see `Sources` sction:
-            https://perceval.quandela.net/docs/
+        ``Scaleway Cloud`` related arguments
+            https://console.scaleway.com/
+
+        :param platform: str, name of the computing platform
+            for example "sim:sampling:p100" or "sim:sampling:h100"
+
+        :param project_id: str, your Scaleway project ID
+            https://console.scaleway.com/organization/projects
+
+        :param token: str, your API key
+            https://console.scaleway.com/iam/api-keys
+
+        :param deduplication_id: str, default ""
+ 
+        :param max_idle_duration_s: int, default 1200, number of seconds a Scaleway session can idle
+
+        :param max_duration_s: int, default 3600, duration of your Scaleway session, for pricing info visit
+            https://console.scaleway.com/qaas
 
     Raises:
-        Exception: when either is invalid :attr:`provider`, :attr:`platform` or :attr:`api_token`
+        Exception: when any of cloud provider related parameters is invalid
+            so the Device is unable to establish a session with the remote cloud service.
 
     .. note::
         We strongly recommend you to keep secrets(like tokens and keys) in the
@@ -117,8 +141,8 @@ class QuandelaDevice(QubitDevice):
     .. code-block:: python
         >>> import os
         >>> from dotenv import load_dotenv
-        >>> load_dotenv('.env_perceval')
-        >>> my_token = os.environ.get('PERCEVAL_TOKEN')
+        >>> load_dotenv('.env_quandela')
+        >>> my_token = os.environ.get('QUANDELA_TOKEN')
     """
     name = "Quandela PennyLane plugin"
     short_name = "quandela.device"
