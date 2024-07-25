@@ -135,8 +135,8 @@ class QuandelaDevice(QubitDevice):
         We strongly recommend you to keep secrets(like tokens and keys) in the
         separate files and load environment, instead of hardcoding these in your scripts.
 
-        Here is example how to obtain a variable named 'PERCEVAL_TOKEN'
-        stored in text file called '.env_perceval' using dotenv and os packages:
+        Here is example how to obtain a variable named 'QUANDELA_TOKEN'
+        stored in text file called '.env_quandela' using dotenv and os packages:
 
     .. code-block:: python
         >>> import os
