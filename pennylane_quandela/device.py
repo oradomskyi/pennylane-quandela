@@ -111,20 +111,20 @@ class QuandelaDevice(QubitDevice):
         ``Scaleway Cloud`` related arguments
             https://console.scaleway.com/
 
-        :param platform: str, name of the computing platform
+        :param platform: (str | None) name of the computing platform
             for example "sim:sampling:p100" or "sim:sampling:h100"
 
-        :param project_id: str, your Scaleway project ID
+        :param project_id: (str | None) your Scaleway project ID
             https://console.scaleway.com/organization/projects
 
-        :param token: str, your API key
+        :param token: (str | None) your API key
             https://console.scaleway.com/iam/api-keys
 
-        :param deduplication_id: str, default ""
+        :param deduplication_id: (str | None) default ""
  
-        :param max_idle_duration_s: int, default 1200, number of seconds a Scaleway session can idle
+        :param max_idle_duration_s: (int | None) default 1200, number of seconds a Scaleway session can idle
 
-        :param max_duration_s: int, default 3600, duration of your Scaleway session, for pricing info visit
+        :param max_duration_s: (int | None) default 3600, duration of your Scaleway session, for pricing info visit
             https://console.scaleway.com/qaas
 
     Raises:
