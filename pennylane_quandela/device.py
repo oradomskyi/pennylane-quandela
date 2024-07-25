@@ -368,11 +368,22 @@ class QuandelaDevice(QubitDevice):
         results = self.job.get_results()['results']
         samples = [ [0] * self.num_wires ] * self.shots
         idx = 0
+        n_non_convertible_states = 0
         for state in results:
-            q_state_key = self._state_to_list_int(state)
+            try:
+                q_state_key = self._state_to_list_int(state)
+            except ValueError:
+                n_non_convertible_states += 1
+                # do not move samples index forward
+                continue
+
+            # state is converted, copy it to output list
             for _ in range(0, results[state]):
                 samples[idx] = q_state_key # copy instead of assignment
                 idx += 1
+
+        if 0 < n_non_convertible_states:
+            samples = samples[0:-n_non_convertible_states]
 
         samples  = vstack(samples)
         return samples
