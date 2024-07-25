@@ -322,7 +322,7 @@ class QuandelaDevice(QubitDevice):
         Returns:
             None
         """
-        self._process_apply_kwargs(kwargs)
+        self._process_kwargs(kwargs)
 
         #TODO: Do we want to expose use_postselection param to user ?
         processor = self._pennylane_converter.convert(operations)
@@ -392,9 +392,8 @@ class QuandelaDevice(QubitDevice):
         self._job = None
     # ------------------------------------------------------------- #
 
-    def _process_apply_kwargs(self, kwargs) -> None:
-        """Processing the keyword arguments that were provided by PennyLane
-        when calling an apply() function.
+    def _process_kwargs(self, kwargs) -> None:
+        """Processing the keyword arguments that were provided by PennyLane.
 
         Args:
             kwargs (dict): keyword arguments to be set for the device
