@@ -291,6 +291,7 @@ class QuandelaDevice(QubitDevice):
 
         if kwargs.get('provider_name', None) is not None:
             try:
+                print('kwargs', kwargs)
                 self._provider = ProviderFactory.get_provider(**kwargs)
             except Exception as e:
                 raise Exception(
@@ -427,7 +428,10 @@ class QuandelaDevice(QubitDevice):
                 "See `Remote Computing with Quandela Cloud` "+
                 "https://perceval.quandela.net/docs/v0.11/notebooks/Remote_computing.html")
 
-        self.processor.with_input(self.input_state)
+        if self.input_state.has_polarization:
+            self.processor.with_polarized_input(self.input_state)
+        else:
+            self.processor.with_input(self.input_state)
 
         if not self.noise_model:
             self._noise_model = NoiseModel(
