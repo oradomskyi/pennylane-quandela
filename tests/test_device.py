@@ -127,7 +127,7 @@ class TestQuandelaDevice:
 
     def test_state_to_list_invalid_inputs_1_wires(self):
         """Test that device cannot convert specific Fock states
-        into quantum states and raises ValueError.
+        into quantum states and returns None.
         """
         device = QuandelaDevice(wires=1, shots=1)
 
@@ -144,7 +144,7 @@ class TestQuandelaDevice:
 
     def test_state_to_list_invalid_inputs_2_wires(self):
         """Test that device cannot convert specific Fock states
-        into quantum states and raises ValueError.
+        into quantum states and returns None.
         """
         device = QuandelaDevice(wires=2, shots=1)
 
