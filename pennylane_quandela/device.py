@@ -370,9 +370,8 @@ class QuandelaDevice(QubitDevice):
         idx = 0
         n_non_convertible_states = 0
         for state in results:
-            try:
-                q_state_key = self._state_to_list_int(state)
-            except ValueError:
+            q_state_key = self._state_to_list_int(state)
+            if q_state_key is None:
                 n_non_convertible_states += 1
                 # do not move samples index forward
                 continue
@@ -382,6 +381,8 @@ class QuandelaDevice(QubitDevice):
                 samples[idx] = q_state_key # copy instead of assignment
                 idx += 1
 
+        # would reducing the number of samples
+        # function properly with PennyLane?
         if 0 < n_non_convertible_states:
             samples = samples[0:-n_non_convertible_states]
 
@@ -472,11 +473,9 @@ class QuandelaDevice(QubitDevice):
             :param state:  resresentation os a Fock state
 
         Returns:
-            int representation of a Fock state
-
-        Raises:
-            ValueError if state has no photons for a qubit like |0,0>
-            when there are several photons in one state line |2,0>
+            int representation of a Fock state or None
+            when state has no photons for a qubit like |0,0>
+            or when there are several photons in one state line |2,0>
 
         Note that PennyLane uses the convention :math:`|q_0,q_1, ... ,q_{N-1}>` where
         :math:`q_0` is the most significant bit.
@@ -504,6 +503,6 @@ class QuandelaDevice(QubitDevice):
                 q_state_list[i] = 1
                 continue
 
-            raise ValueError(f"Cannot convert Fock state{state} to quantum state!")
+            return None
 
         return q_state_list
