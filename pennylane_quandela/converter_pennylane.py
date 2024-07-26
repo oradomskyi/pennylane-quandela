@@ -136,7 +136,6 @@ class PennylaneConverter(AGateConverter):
                 instruction_mat = to_matrix(instruction) # np.ndarray
                 gate = self._create_generic_1_qubit_gate(instruction_mat)
                 gate.name = instruction.name
-
                 # pennylane.wires.Wires is an info about qubit positions
                 self._converted_processor.add(instruction.wires[0] * 2, gate.copy())
             else:
@@ -146,13 +145,11 @@ class PennylaneConverter(AGateConverter):
 
                 c_idx = instruction.wires[0] * 2
                 c_data = instruction.wires[1] * 2
-                c_first = min(c_idx, c_data)
 
                 self._create_2_qubit_gates_from_catalog(instruction.name,
                     n_cnot,
                     c_idx,
                     c_data,
-                    c_first,
                     use_postselection)
 
         self.apply_input_state()
