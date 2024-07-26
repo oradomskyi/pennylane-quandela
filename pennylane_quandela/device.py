@@ -399,6 +399,7 @@ class QuandelaDevice(QubitDevice):
         # Reset only internal data, not the options that are determined on
         # device creation
         self._processor = None
+        self._circuit = None
         self._min_detected_photons = None
         self._noise_model = None
         self._job_name = None
