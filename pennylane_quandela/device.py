@@ -381,8 +381,8 @@ class QuandelaDevice(QubitDevice):
                 samples[idx] = q_state_key # copy instead of assignment
                 idx += 1
 
-        # would reducing the number of samples
-        # function properly with PennyLane?
+        # would reduce the number of samples,
+        # dies this function properly with PennyLane?
         if 0 < n_non_convertible_states:
             samples = samples[0:-n_non_convertible_states]
 
