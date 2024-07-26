@@ -140,8 +140,7 @@ class TestQuandelaDevice:
         ]
 
         for state in invalid_q_states:
-            with pytest.raises(ValueError):
-                device._state_to_list_int(state)
+            assert device._state_to_list_int(state) is None
 
     def test_state_to_list_invalid_inputs_2_wires(self):
         """Test that device cannot convert specific Fock states
@@ -157,8 +156,7 @@ class TestQuandelaDevice:
         ]
 
         for state in invalid_q_states:
-            with pytest.raises(ValueError):
-                device._state_to_list_int(state)
+            assert device._state_to_list_int(state) is None
 
     def test_qnode_probs_1(self):
         """Test correctness of circuit execution 
