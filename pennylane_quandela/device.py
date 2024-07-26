@@ -382,7 +382,7 @@ class QuandelaDevice(QubitDevice):
                 idx += 1
 
         # would reduce the number of samples,
-        # dies this function properly with PennyLane?
+        # does this function properly with PennyLane?
         if 0 < n_non_convertible_states:
             samples = samples[0:-n_non_convertible_states]
 
