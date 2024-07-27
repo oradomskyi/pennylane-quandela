@@ -429,9 +429,11 @@ class QuandelaDevice(QubitDevice):
                 "See `Remote Computing with Quandela Cloud` "+
                 "https://perceval.quandela.net/docs/v0.11/notebooks/Remote_computing.html")
 
-        if self.input_state.has_polarization:
-            self.processor.with_polarized_input(self.input_state)
-        else:
+        # exqalibur.StateVector might not have has_polarization property
+        try:
+            if self.input_state.has_polarization:
+                self.processor.with_polarized_input(self.input_state)
+        except AttributeError:
             self.processor.with_input(self.input_state)
 
         if not self.noise_model:
