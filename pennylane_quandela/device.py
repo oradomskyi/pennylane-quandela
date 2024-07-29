@@ -97,8 +97,8 @@ class QuandelaDevice(QubitDevice):
             https://perceval.quandela.net/docs/
 
     Raises:
-        Exception: when any of cloud provider related parameters is invalid
-            so the Device is unable to establish a session with the remote cloud service.
+        Exception: when cannot submit the job.
+        ValueError: when input_state is not set.
 
     .. note::
         We strongly recommend you to keep secrets(like tokens and keys) in the
