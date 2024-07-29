@@ -48,7 +48,6 @@ from perceval import (
     ISession,
     ABackend,
     BackendFactory,
-    ProviderFactory,
     Processor,
     Circuit,
     NoiseModel
@@ -87,7 +86,7 @@ class QuandelaDevice(QubitDevice):
             For more see `Computing Backends` section:
                 https://perceval.quandela.net/docs/
 
-        :param provider: (str | None) Perceval provider name.
+        :param cloud_provider: (str | None) Perceval provider name.
             If not provided, computation will run locally.
             For more see `Providers` section:
                 https://perceval.quandela.net/docs/
@@ -96,36 +95,6 @@ class QuandelaDevice(QubitDevice):
             such as `brightness`, `purity` or `indistinguishability`.
             For more infor see `Sources` sction:
             https://perceval.quandela.net/docs/
-
-        ``Quandela Cloud`` related arguments
-
-            https://cloud.quandela.com/
-
-        :param platform: (str | None) name of cloud computing platform.
-            For more info see compatible cloud platforms in the `Providers` section:
-                https://perceval.quandela.net/docs/
-
-        :param api_token: (str | None) API token obtained from Quandela Cloud Provider 
-            if token is not provided, computation will run locally.
-        
-        ``Scaleway Cloud`` related arguments
-            https://console.scaleway.com/
-
-        :param platform: (str | None) name of the computing platform
-            for example "sim:sampling:p100" or "sim:sampling:h100"
-
-        :param project_id: (str | None) your Scaleway project ID
-            https://console.scaleway.com/organization/projects
-
-        :param token: (str | None) your API key
-            https://console.scaleway.com/iam/api-keys
-
-        :param deduplication_id: (str | None) default ""
- 
-        :param max_idle_duration_s: (int | None) default 1200, number of seconds a Scaleway session can idle
-
-        :param max_duration_s: (int | None) default 3600, duration of your Scaleway session, for pricing info visit
-            https://console.scaleway.com/qaas
 
     Raises:
         Exception: when any of cloud provider related parameters is invalid
@@ -209,13 +178,13 @@ class QuandelaDevice(QubitDevice):
         return self._backend
 
     @property
-    def provider(self) -> ISession:
+    def cloud_provider(self) -> ISession:
         """Perceval provider object.
 
         Returns:
             perceval.providers.ISession
         """
-        return self._provider
+        return self._cloud_provider
 
     @property
     def processor(self) -> Processor:
@@ -289,15 +258,7 @@ class QuandelaDevice(QubitDevice):
         # This will fall back on SLOS when no backend found
         self._backend = BackendFactory.get_backend(kwargs.get('backend', None))
 
-        if kwargs.get('provider_name', None) is not None:
-            try:
-                print('kwargs', kwargs)
-                self._provider = ProviderFactory.get_provider(**kwargs)
-            except Exception as e:
-                raise Exception(
-                    "Cannot connect to a cloud provider, " +
-                    f"settings are:{[ f'{k}:{v}' for k,v in kwargs.items()]}\n"
-                ) from e
+        self._cloud_provider = kwargs.get('cloud_provider', None)
 
         self._pennylane_converter = PennylaneConverter(
                     catalog = kwargs.get('catalog', None),
@@ -330,9 +291,9 @@ class QuandelaDevice(QubitDevice):
 
         self._circuit = processor.linear_circuit()
 
-        if self.provider is not None:
+        if self.cloud_provider is not None:
             # Setup remote processor
-            self._processor = self.provider.build_remote_processor()
+            self._processor = self.cloud_provider.build_remote_processor()
             self.processor.set_circuit(self._circuit)
         else:
             # Setup local processor
@@ -430,7 +391,7 @@ class QuandelaDevice(QubitDevice):
                 "https://perceval.quandela.net/docs/v0.11/notebooks/Remote_computing.html")
 
         # exqalibur.StateVector might not have has_polarization property
-        if hasattr(self.input_state, 'has_polarization'):
+        if hasattr(self.input_state, 'has_polarization') and self.input_state.has_polarization:
             self.processor.with_polarized_input(self.input_state)
         else:
             self.processor.with_input(self.input_state)

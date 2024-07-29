@@ -55,7 +55,7 @@ class TestQuandelaDevice:
         assert device.shots == shots
         assert device.backend.name in 'SLOS'
 
-        assert device.provider is None
+        assert device.cloud_provider is None
 
     @pytest.mark.parametrize("wires", [1, 3])
     @pytest.mark.parametrize("shots", [1, 100])
