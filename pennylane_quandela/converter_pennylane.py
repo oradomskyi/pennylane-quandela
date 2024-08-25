@@ -150,7 +150,7 @@ class PennylaneConverter(AGateConverter):
                     c_not=n_cnot,
                     c_idx=c_idx,
                     c_data=c_data,
-                    uuse_postselection=se_postselection,
+                    use_postselection=use_postselection,
                     parameter=None)
 
         self.apply_input_state()
