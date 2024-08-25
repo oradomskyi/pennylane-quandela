@@ -146,11 +146,12 @@ class PennylaneConverter(AGateConverter):
                 c_idx = instruction.wires[0] * 2
                 c_data = instruction.wires[1] * 2
 
-                self._create_2_qubit_gates_from_catalog(instruction.name,
-                    n_cnot,
-                    c_idx,
-                    c_data,
-                    use_postselection)
+                self._create_2_qubit_gates_from_catalog(gate_name=instruction.name,
+                    c_not=n_cnot,
+                    c_idx=c_idx,
+                    c_data=c_data,
+                    uuse_postselection=se_postselection,
+                    parameter=None)
 
         self.apply_input_state()
         return self._converted_processor
