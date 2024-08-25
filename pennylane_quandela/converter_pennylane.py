@@ -135,7 +135,8 @@ class PennylaneConverter(AGateConverter):
                 # one mode gate
                 instruction_mat = to_matrix(instruction) # np.ndarray
                 gate = self._create_generic_1_qubit_gate(instruction_mat)
-                gate.name = instruction.name
+                #gate.name = instruction.name
+                gate._name = instruction.name # Perceval 0.11.0 compatibility
                 # pennylane.wires.Wires is an info about qubit positions
                 self._converted_processor.add(instruction.wires[0] * 2, gate.copy())
             else:
@@ -150,6 +151,7 @@ class PennylaneConverter(AGateConverter):
                     n_cnot=n_cnot,
                     c_idx=c_idx,
                     c_data=c_data,
+                    c_first = min(c_idx, c_data), # Perceval 0.11.0 compatibility
                     use_postselection=use_postselection)
 
         self.apply_input_state()

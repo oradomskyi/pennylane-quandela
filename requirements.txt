@@ -1,2 +1,2 @@
-perceval-quandela>=0.10.5
+perceval-quandela==0.11.0
 pennylane>=0.37.0

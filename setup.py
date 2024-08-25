@@ -39,7 +39,7 @@ with open("pennylane_quandela/_version.py", encoding="utf-8") as f:
 # only where required.
 requirements = [
     "pennylane>=0.37.0",
-    "perceval-quandela>=0.10.5"
+    "perceval-quandela==0.11.0"
 ]
 
 with open("README.rst", encoding="utf-8") as f:
